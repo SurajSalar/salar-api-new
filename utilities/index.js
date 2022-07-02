@@ -11,9 +11,8 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASSWORD,
   },
 });
-
-module.exports = {
-  sendEmail: async (toEmail, subject, text, html) => {
+class Services {
+  async sendEmail(toEmail, subject, text, html) {
     try {
       console.log({
         host: process.env.EMAIL_HOST,
@@ -39,8 +38,8 @@ module.exports = {
     } catch (error) {
       return { status: 0, message: error.message };
     }
-  },
-  sendSignupConfirmation: async (mobile, message) => {
+  }
+  async sendSignupConfirmation(mobile, message) {
     console.log(
       "🚀 ~ file: index.js ~ line 46 ~ sendTextMessage: ~ mobile",
       mobile
@@ -84,8 +83,8 @@ module.exports = {
     } catch (error) {
       return { status: 0, message: error.message };
     }
-  },
-  sendTranxChangeOtp: async (mobile, message) => {
+  }
+ async sendTranxChangeOtp (mobile, message) {
     console.log(
       "🚀 ~ file: index.js ~ line 46 ~ sendTextMessage: ~ mobile",
       mobile
@@ -123,5 +122,8 @@ module.exports = {
     } catch (error) {
       return { status: 0, message: error.message };
     }
-  },
-};
+  }
+
+}
+module.exports = Services;
+

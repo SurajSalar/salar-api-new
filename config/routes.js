@@ -1,4 +1,3 @@
 module.exports = (router, app) => {
-    require('../routes/auth')(router, app);
-    require('../routes/utilities')(router, app);
+    require('../routes/user/auth')(router, app)
 };
