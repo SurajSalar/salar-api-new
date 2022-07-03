@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const moment = require('moment');
 
 const Controller = require('./base');
-const {AccessTokens} = require('../models/s_auth')
+const { AccessTokens } = require('../models/s_auth')
 
 
 

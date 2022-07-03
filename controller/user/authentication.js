@@ -1,7 +1,7 @@
 const _ = require("lodash");
 
 const Controller = require("../base");
-const {Users} = require('../../models/s_users');
+const { Users } = require('../../models/s_users');
 const RequestBody = require("../../utilities/requestBody");
 const Authentication = require('../auth');
 const CommonService = require("../../utilities/common");
@@ -124,12 +124,11 @@ class UsersController extends Controller {
             }
         } catch (error) {
             console.log("error = ", error);
-            this.res.send({ status: 0, message: error });
+            return this.res.send({ status: 0, message: "Internal server error" });
         }
 
     }
-
-    
+ 
     /********************************************************
     Purpose: SignIn
     Parameter:
@@ -141,9 +140,9 @@ class UsersController extends Controller {
    ********************************************************/
     async signIn() {
         try {
-            let fieldsArray = ["userId", "password"];
+            const fieldsArray = ["userId", "password"];
             const data = this.req.body;
-            let emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
             }
@@ -162,7 +161,7 @@ class UsersController extends Controller {
             return this.res.send({ status: 1, message: "Login Successful", access_token: token, data: userDetails });
         } catch (error) {
             console.log(error);
-            this.res.send({ status: 0, message: error });
+            return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
 
@@ -200,7 +199,7 @@ class UsersController extends Controller {
 
         } catch (error) {
             console.log("error- ", error);
-            this.res.send({ status: 0, message: error });
+            return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
 
@@ -232,10 +231,9 @@ class UsersController extends Controller {
             return this.res.send({ status: 1, message: "Password updated successfully"});
         } catch (error) {
             console.log("error- ", error);
-            this.res.send({ status: 0, message: error });
+            return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
-
 
 }
 module.exports = UsersController;

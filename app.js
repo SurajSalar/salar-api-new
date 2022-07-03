@@ -30,6 +30,7 @@ app.use(function (req, res, next) {
 
 app.use(cors(crossOption));
 
+app.use('/', express.static(__dirname + '/'));
 
 require('./config/routes')(router, app);
 app.use(router);

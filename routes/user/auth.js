@@ -2,22 +2,22 @@ const UsersController = require('../../controller/user/authentication');
 
 module.exports = (router, app) => {
     router.post('/signUp', (req, res, next) => {
-        const userObj = (new UsersController()).boot(req, res);
-        return userObj.signUp();
+        const authObj = (new UsersController()).boot(req, res);
+        return authObj.signUp();
     });
 
     router.post('/signIn', (req, res, next) => {
-        const userObj = (new UsersController()).boot(req, res);
-        return userObj.signIn();
+        const authObj = (new UsersController()).boot(req, res);
+        return authObj.signIn();
     });
 
     router.post('/forgotPassword', (req, res, next) => {
-        const userObj = (new UsersController()).boot(req, res);
-        return userObj.forgotPassword();
+        const authObj = (new UsersController()).boot(req, res);
+        return authObj.forgotPassword();
     });
 
     router.post('/resetPassword', (req, res, next) => {
-        const userObj = (new UsersController()).boot(req, res);
-        return userObj.resetPassword();
+        const authObj = (new UsersController()).boot(req, res);
+        return authObj.resetPassword();
     });
 }

@@ -1,7 +1,20 @@
-var mongoose = require('mongoose');
-var schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const schema = mongoose.Schema;
 
-var UserSchema = new schema({
+const address = new schema({
+    name: { type: String, trim: true },
+    addressLine1: { type: String, trim: true },
+    addressLine2: { type: String, trim: true },
+    city: { type: String, trim: true },
+    zipCode: { type: Number, trim: true },
+    mobileNo: { type: String, trim: true },
+    emailId: { type: String, trim: true },
+    country: { type: String, trim: true },
+    GST: { type: String, trim: true },
+    defaultAddress: { type: Boolean, trim: true, default: false }
+});
+
+const UserSchema = new schema({
     fullName: { type: String },
     dob: { type: String  },
     gender:  { type: String, enum : ['male','female']},
@@ -21,6 +34,7 @@ var UserSchema = new schema({
     forgotToken: { type: String },
     forgotTokenCreationTime: { type: Date },
     role: { type: String , enum: ['individual', 'organisation']},
+    shippingAddresses: [address],
 }, {
     timestamps: true
 });
