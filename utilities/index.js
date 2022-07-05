@@ -14,16 +14,7 @@ const transporter = nodemailer.createTransport({
 class Services {
   async sendEmail(toEmail, subject, text, html) {
     try {
-      console.log({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
-        ignoreTLS: false,
-        secure: false,
-        auth: {
-          user: process.env.EMAIL,
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
+      
       let sendMail = await transporter.sendMail({
         from: process.env.EMAIL, // sender address
         to: toEmail, // list of receivers
@@ -40,10 +31,7 @@ class Services {
     }
   }
   async sendSignupConfirmation(mobile, message) {
-    console.log(
-      "🚀 ~ file: index.js ~ line 46 ~ sendTextMessage: ~ mobile",
-      mobile
-    );
+    
     try {
       /*
        *Message should be in below format its signup confirmation templet
@@ -85,10 +73,7 @@ class Services {
     }
   }
  async sendTranxChangeOtp (mobile, message) {
-    console.log(
-      "🚀 ~ file: index.js ~ line 46 ~ sendTextMessage: ~ mobile",
-      mobile
-    );
+    
     try {
       /*
        *Message should be in below format its Send OTP templet
