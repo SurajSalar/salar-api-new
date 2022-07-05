@@ -1,0 +1,13 @@
+{
+    "fullName":"Salar Admin",
+    "dob":"01-07-1993",
+    "gender":"male",
+    "age":"28",
+    "email":"asmsuraj@gmail.com",
+    "country":"India",
+    "mobileNo":"7047934107",
+    "password":"Admin@1234",
+    "sponserId":"",
+    "termsAndConditions": true,
+    "role": "admin"
+}

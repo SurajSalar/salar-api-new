@@ -10,7 +10,8 @@
      token: { type: String },
      refreshToken: { type: String },
      role: { type: String },
-     tokenExpiryTime: { type: Date }
+     tokenExpiryTime: { type: Date },
+     refreshTokenExpiryTime: { type: Date }
  },
      { timestamps: true });
  
