@@ -8,17 +8,17 @@ var db = mongoose.connect(mongoUrl, {
     useUnifiedTopology: true
 });
 
-const admin = require('../models/s_admin');
+const { Admin } = require('../models/s_admin');
 const adminSeed = require("./admin.json")
 
 mongoose.connection.once('open', async () => {
-    console.log('conneted to database');
+    console.log('connected to database');
 
     // Start running seeder 
     // Seed for admin
     try {        
         adminSeed.password = await commonService.ecryptPassword(adminSeed)
-        await admin.Admin.findOneAndUpdate({ email: adminSeed.email }, adminSeed, { upsert: true, new: true });        
+        await Admin.findOneAndUpdate({ email: adminSeed.email }, adminSeed, { upsert: true, new: true });        
     } catch (error) {
         console.error("error in admin seed : ", error);
         mongoose.connection.close()

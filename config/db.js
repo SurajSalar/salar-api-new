@@ -6,7 +6,7 @@ var db = mongoose.connect(mongoUrl, {
     useUnifiedTopology: true
 });
 mongoose.connection.once('open', () => {
-    console.log('conneted to database');
+    console.log('connected to database');
 });
 
 mongoose.connection.once('error', (error) => {
