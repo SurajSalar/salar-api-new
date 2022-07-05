@@ -178,7 +178,6 @@
     verifyPassword(data) {
         return new Promise(async (resolve, reject) => {
             try {
-                console.log(`data: ${JSON.stringify(data)}`)
                 let isVerified = false;
                 if (data && data.password && data.savedPassword) {
                     // bcrypt.compare(myPlaintextPassword, hash, function(err, result) {
