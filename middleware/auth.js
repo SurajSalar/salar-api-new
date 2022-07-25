@@ -5,6 +5,7 @@ module.exports = async function (req, res, next) {
     //get the token from the header if present
     
     var token = req.headers["x-access-token"] || req.headers["authorization"];
+    console.log('token info is ', token)
     token = token ? token.split(" ")[1] : false;
 
     //if no token found, return response (without going to the next middelware)
@@ -12,7 +13,8 @@ module.exports = async function (req, res, next) {
 
     try {
         //if can verify the token, set req.user and pass to next middleware
-        const access_token = await AccessTokens .findOne({ token: token });
+        const access_token = await AccessTokens.findOne({ token: token });
+        console.log('access_token is ', access_token)
         if (access_token) {
             req.user = access_token.userId;
             next();
