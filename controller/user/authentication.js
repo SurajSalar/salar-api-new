@@ -80,11 +80,13 @@ class UsersController extends Controller {
             if(!validatePassword){
                 return this.res.send({ status: 0, message: "Max word limit - 15 (with Mix of Capital,Small Letters , One Numerical and One Special Character" });
             }
-            // check emailId is exist or not
-            const userMobileNoCount = await Users.count({"mobileNo": this.req.body.mobileNo});
-            if(userMobileNoCount >=10){
-                return this.res.send({ status: 0, message: "This mobile number exceeds the limit of registeration, please use other mobile for registration" });
+            if(this.req.body.sponserId){
+                const userExists = await Users.findOne({sponserId: this.req.body.sponserId, isDeleted: false});
+                if (_.isEmpty(userExists)) {
+                    return this.res.send({ status: 0, message: "Invalid sponserId" });
+                } 
             }
+    
             const user = await Users.findOne({"emailId": this.req.body.emailId.toLowerCase()});
 
             //if user exist give error
@@ -92,7 +94,7 @@ class UsersController extends Controller {
                 return this.res.send({ status: 0, message: "Email already exists" });
             } else {
                 let data = this.req.body;
-                const transactionPassword = await this.commonService.randomTextGenerator(12);
+                const transactionPassword = await this.commonService.randomGenerator(6);
                 const encryptedPassword = await this.commonService.ecryptPassword({ password: data['password'] });
                 data = { ...data, password: encryptedPassword, transactionPassword };
                 data['emailId'] = data['emailId'].toLowerCase();
@@ -100,7 +102,7 @@ class UsersController extends Controller {
                 if(usersCount <= 8){
                     usersCount = '0'+ (usersCount+1);
                 }
-                const randomText = await this.commonService.randomTextGenerator(8)
+                const randomText = (await this.commonService.randomGenerator(2,'number') +await this.commonService.randomGenerator(1,'capital')+await this.commonService.randomGenerator(2,'number') )
                 data['registerId'] = 'S'+randomText+ usersCount
                 // save new user
                 const newUser = await new Model(Users).store(data);
@@ -120,7 +122,6 @@ class UsersController extends Controller {
                     }
                     return this.res.send({ status: 1, message: "User registered Successfully"});
                 }
-
             }
         } catch (error) {
             console.log("error = ", error);
@@ -157,7 +158,7 @@ class UsersController extends Controller {
             }
 
             const userDetails = await Users.findById({_id:user._id}).select({password:0, __v:0, transactionPassword:0});
-            const { token } = await this.authentication.createToken({ id: user._id, role: userDetails.role });
+            const { token } = await this.authentication.createToken({ id: user._id, role: userDetails.role, ipAddress: this.req.ip });
             return this.res.send({ status: 1, message: "Login Successful", access_token: token, data: userDetails });
         } catch (error) {
             console.log(error);

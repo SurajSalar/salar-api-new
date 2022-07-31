@@ -1,11 +1,14 @@
 const _ = require("lodash");
 const { ObjectID } = require('mongodb');
+const moment = require('moment');
+const json2xls = require('json2xls');
+const path = require('path');
+const fs = require('fs');
 
 const Controller = require("../base");
 const { Users } = require('../../models/s_users');
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
-
 
 
 class UserProfileController extends Controller {
@@ -373,7 +376,86 @@ class UserProfileController extends Controller {
         }
     }
 
+     /********************************************************
+    Purpose: Post userTeamListing
+    Method: POST
+    Authorisation: true
+    Parameter:
+    {
+        "page":1,
+        "pagesize":3,
+        "search":"",
+        "startDate":"2022-07-28",
+        "endDate":"2022-07-28",
+        "isExcel": false
+    }
+    Authorisation: true
+    Return: JSON String
+    ********************************************************/
+    async userTeamListing() {
+        try {
+            const currentUserId = this.req.user;
+            const data = this.req.body;
+            const skip = (data.page - 1) * (data.pagesize);
+            const sort = data.sort ? data.sort : { createdAt: -1 };
+            const limit = data.pagesize;
+            if (currentUserId) {
+                const userDetails = await Users.findOne({ _id: ObjectID(currentUserId)},{registerId:1, fullName:1})
+                if (_.isEmpty(userDetails)) {
+                    return this.res.send({ status: 0, message: "User not found"});
+                }
+                let finalQuery = [{sponserId: userDetails.registerId, isDeleted: false}]
+                if(data.startDate || data.endDate){
+                    const startDate = new Date(moment(new Date(data.startDate)).utc().startOf('day')); // set to 12:00 am today
+                    const endDate = new Date(moment(new Date(data.endDate)).utc().endOf('day')); // set to 23:59 pm today
+                    if (data.startDate && data.endDate) { finalQuery.push({ createdAt: { $gte: startDate, $lte: endDate } }); }
+                    else if (data.startDate) { finalQuery.push({ createdAt: { $gte: startDate } }); }
+                    else if (data.endDate) { finalQuery.push({ createdAt: { $lte: endDate } }); }
+                }
+                if(data.search){
+                    finalQuery.push({$or: [{fullName :  new RegExp(data.search, 'i')}, {registerId :  new RegExp(data.search, 'i')}]}); 
+                }
+                const projectData = data.isExcel ?
+                {
+                    FullName: "$fullName", 
+                    RegisterId: "$registerId",
+                    'Date Of Joining': { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, 
+                    _id: 0,
+                }:
+                {
+                    fullName: 1, 
+                    registerId: 1,
+                    createdAt : { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, 
+                };
+                const listing = await Users.aggregate([
+                    { $match: { $and:finalQuery } },
+                    { $project: projectData },
+                    { $sort: sort },
+                    { $skip: skip },
+                    { $limit: limit }
+                ])
+                if(data.isExcel){
+                    let newListing =[]
+                    for(let i=1; i<=listing.length; i++){
+                       await newListing.push({'S_NO':i,...listing[i-1]})
+                    }
+                    const filePathAndName = userDetails.fullName + '-' + "excel" + '-' + Date.now() + ".xlsx";
+                    const filePath = path.join(__dirname, `../../public/excel/`, filePathAndName);
+                    const excel = await json2xls(newListing);
+                    await fs.writeFileSync(filePath, excel, 'binary')
+                    return this.res.send({status:1, message:"Excel file download successfully", data: filePathAndName });
+                }else{
+                    const total = await Users.find({$and:finalQuery}).countDocuments()
+                    return this.res.send({ status: 1,message: "Listing team details", data: { listing }, page: data.page, perPage: data.pagesize, total: total })
+                }
+                }
+            return this.res.send({ status: 0, message: "User not found"});
 
+        } catch (error) {
+            console.log(error)
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
 
 }
 module.exports = UserProfileController;

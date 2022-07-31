@@ -9,6 +9,7 @@
      adminId: { type: Schema.Types.ObjectId, ref: 'Admin' },
      token: { type: String },
      refreshToken: { type: String },
+     ipAddress: { type: String },
      role: { type: String },
      tokenExpiryTime: { type: Date },
      refreshTokenExpiryTime: { type: Date }

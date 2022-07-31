@@ -22,7 +22,7 @@ class AuthController extends Controller {
                 data.refreshToken = refreshToken;
                 data.tokenExpiryTime = moment().add(parseInt(540), 'minutes');
                 data.refreshTokenExpiryTime = moment().add(parseInt(720), 'minutes');
-                data.role = data.role
+                data.role = data.role;
                 delete data.id;
                 await AccessTokens.findOneAndUpdate({ userId: data.userId }, data, { upsert: true, new: true });
                 return resolve({ token, refreshToken });
