@@ -23,22 +23,22 @@ const BrandSchema = Schema({
     approval_letter: {
         type: String,
     },
-    seller_id:  [{
+    seller: {
         type: Schema.Types.ObjectId,
         ref: 'Seller'
-    }],
-    category_id: [{
+    },
+    category: {
         type: Schema.Types.ObjectId,
         ref: 'Category'
-    }],
-    subcategory_id: [{
+    },
+    sub_category: {
         type: Schema.Types.ObjectId,
         ref: 'SubCategory'
-    }],
-    childcategory_id: [{
+    },
+    child_category: {
         type: Schema.Types.ObjectId,
         ref: 'SubCategory'
-    }],
+    },
     created_at: {
         type: Date,
         default: Date.now
@@ -49,4 +49,4 @@ const BrandSchema = Schema({
     }
 });
 
-const Category = module.exports = mongoose.model('Category', CategorySchema);
+const Brand = module.exports = mongoose.model('Brand', BrandSchema);

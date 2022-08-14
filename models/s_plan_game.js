@@ -1,28 +1,21 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const SubCategorySchema = Schema({
+const PlanSchema = Schema({
     name: {
         type: String
     },
-    description: {
-        type: String
-    },
-    status: {
+    width: {
         type: Number
     },
-    type: {
+    depth: {
         type: Number,
     },
-    seller: {
+    seller:  {
         type: Schema.Types.ObjectId,
         ref: 'Seller'
     },
-    category: {
-        type: Schema.Types.ObjectId,
-        ref: 'Category'
-    },
-    image: {
-        type: String,
+    stauts: {
+        type: Number,
     },
     created_at: {
         type: Date,
@@ -34,4 +27,4 @@ const SubCategorySchema = Schema({
     }
 });
 
-const SubCategory = module.exports = mongoose.model('SubCategory', SubCategorySchema);
+const Plan = module.exports = mongoose.model('Plan', PlanSchema);
