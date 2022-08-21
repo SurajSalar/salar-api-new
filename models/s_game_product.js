@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const GameSchema = Schema({
+const GameProductSchema = Schema({
     name: {
         type: String
     },
@@ -109,4 +109,8 @@ const GameSchema = Schema({
     }
 });
 
-const Game = module.exports = mongoose.model('Game', GameSchema);
+// const GameProduct = module.exports = mongoose.model('GameProduct', GameProductSchema);
+const GameProduct = mongoose.model('GameProduct', GameProductSchema);
+module.exports = {
+    GameProduct
+}

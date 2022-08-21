@@ -10,7 +10,7 @@ const PlanSchema = Schema({
     depth: {
         type: Number,
     },
-    seller:  {
+    seller: {
         type: Schema.Types.ObjectId,
         ref: 'Seller'
     },
@@ -27,4 +27,4 @@ const PlanSchema = Schema({
     }
 });
 
-const Plan = module.exports = mongoose.model('Plan', PlanSchema);
+const Plan = module.exports = { Plan: mongoose.model('Plan', PlanSchema) };

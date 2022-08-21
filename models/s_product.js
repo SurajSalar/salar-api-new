@@ -27,9 +27,9 @@ const ProductSchema = Schema({
     prod_image: {
         type: String
     },
-    gallary_image: {
+    gallary_image: [{
         type: String
-    },
+    }],
     description: {
         type: String
     },

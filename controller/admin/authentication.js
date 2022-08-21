@@ -30,12 +30,12 @@ class AdminAuthController extends Controller {
 
                 const admin = await Admin.findOne({ email: data.email.toString().toLowerCase() });
                 if (_.isEmpty(admin)) {
-                    return this.res.send({ status: 0, message: "Invalid Email" });
+                    return this.res.status(401).send({ status: 0, message: "Invalid Email" });
                 }
 
                 const status = await this.commonService.verifyPassword({ password: data.password, savedPassword: admin.password });
                 if (!status) {
-                    return this.res.send({ status: 0, message: "Invalid password" });
+                    return this.res.status(401).send({ status: 0, message: "Invalid password" });
                 }
 
                 const adminDetails = await Admin.findById({ _id: admin._id }).select({ password: 0, __v: 0, transactionPassword: 0 });
@@ -52,12 +52,12 @@ class AdminAuthController extends Controller {
                 const { token, refreshToken } = await this.authentication.createToken({ id: adminDetails._id, role: adminDetails.role });
                 return this.res.send({ status: 1, message: "Login Successful", access_token: token, refresh_token: refreshToken, data: adminDetails });
             } else {
-                return this.res.send({ status: 0, message: "Please send grant type fields required." });
+                return this.res.status(400).send({ status: 0, message: "Please send grant type fields required." });
             }
 
         } catch (error) {
             console.log(error);
-            return this.res.send({ status: 0, message: "Internal server error" });
+            return this.res.status(500).send({ status: 0, message: "Internal server error" });
         }
     }
 }
