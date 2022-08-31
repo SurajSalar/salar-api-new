@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const ChildCategorySchema = Schema({
+const GameSubCategorySchema = Schema({
     name: {
         type: String
     },
@@ -13,18 +13,14 @@ const ChildCategorySchema = Schema({
     type: {
         type: Number,
     },
-    seller: [{
+    seller: {
         type: Schema.Types.ObjectId,
         ref: 'Seller'
-    }],
-    category: [{
+    },
+    category: {
         type: Schema.Types.ObjectId,
-        ref: 'Category'
-    }],
-    subcategory: [{
-        type: Schema.Types.ObjectId,
-        ref: 'SubCategory'
-    }],
+        ref: 'GameCategory'
+    },
     image: {
         type: String,
     },
@@ -38,4 +34,4 @@ const ChildCategorySchema = Schema({
     }
 });
 
-const ChildCategory = module.exports = mongoose.model('ChildCategory', ChildCategorySchema);
+const GameSubCategory = module.exports = mongoose.model('GameSubCategory', GameSubCategorySchema);

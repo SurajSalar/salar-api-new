@@ -1,28 +1,21 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const SubCategorySchema = Schema({
+const GameSchema = Schema({
     name: {
         type: String
     },
-    description: {
+    game_url: {
         type: String
     },
     status: {
         type: Number
     },
-    type: {
-        type: Number,
-    },
-    seller: {
-        type: Schema.Types.ObjectId,
-        ref: 'Seller'
-    },
-    category: {
-        type: Schema.Types.ObjectId,
-        ref: 'Category'
-    },
     image: {
         type: String,
+    },
+    category_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'GameCategory'
     },
     created_at: {
         type: Date,
@@ -34,4 +27,8 @@ const SubCategorySchema = Schema({
     }
 });
 
-const SubCategory = module.exports = mongoose.model('SubCategory', SubCategorySchema);
+// const Game = module.exports = mongoose.model('Game', GameSchema);
+const Game = mongoose.model('Game', GameSchema);
+module.exports = {
+    Game
+}
