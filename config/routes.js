@@ -14,4 +14,13 @@ module.exports = (router, app) => {
     require('../routes/user/bankDetails')(router, app)
     // Common Routes
     require('../routes/common/supportTickets')(router, app)
+    // Seller Routes
+    require('../routes/seller/auth')(router, app)
+    require('../routes/seller/sellerProfile')(router, app)
+    require('../routes/seller/kycDetails')(router, app)
+    require('../routes/seller/bankDetails')(router, app)
+    require('../routes/seller/etdDetails')(router, app)
+    require('../routes/seller/fssaiDetails')(router, app)
+    require('../routes/seller/signatureDetails')(router, app)
+    require('../routes/seller/iecDetails')(router, app)
 };

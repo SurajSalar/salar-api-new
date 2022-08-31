@@ -1,20 +1,20 @@
 /****************************
  Common services
  ****************************/
- const _ = require("lodash");
- const bcrypt = require('bcrypt');
- 
- class Common{
-        /********************************************************
-    Purpose: Encrypt password
-    Parameter:
-        {
-            "data":{
-                "password" : "test123"
-            }
+const _ = require("lodash");
+const bcrypt = require('bcrypt');
+
+class Common {
+    /********************************************************
+Purpose: Encrypt password
+Parameter:
+    {
+        "data":{
+            "password" : "test123"
         }
-    Return: JSON String
-    ********************************************************/
+    }
+Return: JSON String
+********************************************************/
     ecryptPassword(data) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -29,25 +29,25 @@
         });
     }
 
-    async passwordValidation(password){
+    async passwordValidation(password) {
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{0,15}.*$/;
-        if(password.match(passwordRegex)) {
-          return true;
+        if (password.match(passwordRegex)) {
+            return true;
         }
-       return false
+        return false
     }
 
     async mobileNoValidation(mobileNo) {
         const mobileNoRegex = /^[0-9]{10}$/;
-        if(mobileNo.match(mobileNoRegex)) {
-          return true;
+        if (mobileNo.match(mobileNoRegex)) {
+            return true;
         }
-       return false
-      }
+        return false
+    }
 
     async emailIdValidation(emailId) {
         const emailIdRegex = /^[a-z0-9]+@[a-z]+\.[a-z]{2,3}$/;
-        if(emailId.match(emailIdRegex)) {
+        if (emailId.match(emailIdRegex)) {
             return true;
         }
         return false
@@ -55,15 +55,15 @@
 
     async nameValidation(fullName) {
         const fullNameRegex = /^[a-zA-Z]{0,30}.*$/;
-        if(fullName.match(fullNameRegex)) {
+        if (fullName.match(fullNameRegex)) {
             return true;
         }
         return false
     }
 
     async zipCodeValidation(zipCode, country) {
-        const zipCodeRegex = country == 'India' ? /^\d{6}$/: /^[\w\-\s]+$/;
-        if(zipCode.match(zipCodeRegex)) {
+        const zipCodeRegex = country == 'India' ? /^\d{6}$/ : /^[\w\-\s]+$/;
+        if (zipCode.match(zipCodeRegex)) {
             return true;
         }
         return false
@@ -71,7 +71,7 @@
 
     async aadharCardValidation(aadharCard) {
         const aadharCardRegex = /^\d{12}$/;
-        if(aadharCard.match(aadharCardRegex)) {
+        if (aadharCard.match(aadharCardRegex)) {
             return true;
         }
         return false
@@ -79,7 +79,7 @@
 
     async passportValidation(passport) {
         const passportRegex = /^[a-zA-Z]{12}.*$/;
-        if(passport.match(passportRegex)) {
+        if (passport.match(passportRegex)) {
             return true;
         }
         return false
@@ -87,7 +87,7 @@
 
     async voterIdValidation(voterId) {
         const voterIdRegex = /^[a-zA-Z]{10}.*$/;
-        if(voterId.match(voterIdRegex)) {
+        if (voterId.match(voterIdRegex)) {
             return true;
         }
         return false
@@ -95,7 +95,7 @@
 
     async SSNValidation(SSN) {
         const SSNRegex = /^\d{3}-?\d{2}-?\d{4}$/;
-        if(SSN.match(SSNRegex)) {
+        if (SSN.match(SSNRegex)) {
             return true;
         }
         return false
@@ -103,7 +103,7 @@
 
     async drivingLicenseValidation(drivingLicense) {
         const drivingLicenseRegex = /^(([A-Z]{2}[0-9]{2})( )|([A-Z]{2}-[0-9]{2}))((19|20)[0-9][0-9])[0-9]{7}$/;
-        if(drivingLicense.match(drivingLicenseRegex)) {
+        if (drivingLicense.match(drivingLicenseRegex)) {
             return true;
         }
         return false
@@ -111,7 +111,7 @@
 
     async GSTValidation(GST) {
         const GSTRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-        if(GST.match(GSTRegex)) {
+        if (GST.match(GSTRegex)) {
             return true;
         }
         return false
@@ -119,7 +119,7 @@
 
     async accountNumberValidation(accountNumber) {
         const accountNumberRegex = /^\d{9,17}$/;
-        if(accountNumber.match(accountNumberRegex)) {
+        if (accountNumber.match(accountNumberRegex)) {
             return true;
         }
         return false
@@ -127,7 +127,7 @@
 
     async IBANNumberValidation(IBANNumber) {
         const IBANNumberRegex = /^([a-zA-Z0-9_-]){38}$/;
-        if(IBANNumber.match(IBANNumberRegex)) {
+        if (IBANNumber.match(IBANNumberRegex)) {
             return true;
         }
         return false
@@ -135,7 +135,7 @@
 
     async IBANNumberValidation(IBANNumber) {
         const IBANNumberRegex = /^([a-zA-Z0-9_-]){38}$/;
-        if(IBANNumber.match(IBANNumberRegex)) {
+        if (IBANNumber.match(IBANNumberRegex)) {
             return true;
         }
         return false
@@ -143,7 +143,7 @@
 
     async IFSCCodeValidation(IFSCCode) {
         const IFSCCodeRegex = /^[A-Za-z]{4}[a-zA-Z0-9]{7}$/;
-        if(IFSCCode.match(IFSCCodeRegex)) {
+        if (IFSCCode.match(IFSCCodeRegex)) {
             return true;
         }
         return false
@@ -151,7 +151,7 @@
 
     async swiftCodeValidation(swiftCode) {
         const swiftCodeRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
-        if(swiftCode.match(swiftCodeRegex)) {
+        if (swiftCode.match(swiftCodeRegex)) {
             return true;
         }
         return false
@@ -159,11 +159,30 @@
 
     async panCardValidation(panCard) {
         const panCardRegex = /^([a-zA-Z]){5}([0-9]){4}([a-zA-Z]){1}?$/;
-        if(panCard.match(panCardRegex)) {
+        if (panCard.match(panCardRegex)) {
             return true;
         }
         return false
     }
+
+    async fssaiLicenseNoValidation(fssaiNo) {
+        console.log('fssaiNo ', fssaiNo)
+        const fssaiNoRegex = /^[0-9]{14}$/;
+        if (fssaiNo.match(fssaiNoRegex)) {
+            return true;
+        }
+        return false
+    }
+
+    async exportLicenseNumberValidation(licenseNumber) {
+        const exportLicenseNumberRegex = /^[0-9A-Z]+$/;
+        if (licenseNumber.match(exportLicenseNumberRegex)) {
+            return true;
+        }
+        return false
+    }
+
+
     /********************************************************
     Purpose: Compare password
     Parameter:
@@ -192,25 +211,37 @@
         });
     }
 
+
     async randomGenerator(length, type) {
-        var result           = '';
-        var characters       = type == 'number' ? '0123456789':(type == 'capital'? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
+        var result = '';
+        var characters = type == 'number' ? '0123456789' : (type == 'capital' ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
         var charactersLength = characters.length;
-        for ( var i = 0; i < length; i++ ) {
-          result += characters.charAt(Math.floor(Math.random() * 
-     charactersLength));
-       }
-       return result;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
     }
 
-     /********************************************************
-     Purpose: Change password validations
-     Parameter:
-     {
-     }
-     Return: JSON String
-    ********************************************************/
-     changePasswordValidation(data) {
+    async randomTextGenerator(length) {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
+    }
+    /********************************************************
+    Purpose: Change password validations
+    Parameter:
+    {
+    }
+    Return: JSON String
+   ********************************************************/
+    changePasswordValidation(data) {
         return new Promise(async (resolve, reject) => {
             try {
                 const passwordObj = data.passwordObj ? data.passwordObj : {}
@@ -237,14 +268,14 @@
         });
     }
 
-     /********************************************************
-     Purpose: Change transaction password validations
-     Parameter:
-     {
-     }
-     Return: JSON String
-    ********************************************************/
-     changeTransactionPasswordValidation(data) {
+    /********************************************************
+    Purpose: Change transaction password validations
+    Parameter:
+    {
+    }
+    Return: JSON String
+   ********************************************************/
+    changeTransactionPasswordValidation(data) {
         return new Promise(async (resolve, reject) => {
             try {
                 const passwordObj = data.passwordObj ? data.passwordObj : {}
@@ -268,5 +299,5 @@
         });
     }
 
- }
- module.exports = Common;
+}
+module.exports = Common;

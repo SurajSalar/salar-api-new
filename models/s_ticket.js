@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 const TicketSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'Users' },
     adminId: { type: Schema.Types.ObjectId, ref: 'Admin' },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
     description: { type: String },
-    role: { type: String, enum : ['user','admin']},
+    role: { type: String, enum : ['user','admin', 'seller']},
     isDeleted: { type: Boolean, default: false }
 },{ timestamps: true });
 
@@ -14,4 +15,3 @@ const Tickets = mongoose.model('supportTickets', TicketSchema);
 module.exports = {
     Tickets: Tickets,
 }
-
