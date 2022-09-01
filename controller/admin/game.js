@@ -6,7 +6,7 @@ const { GameCategory } = require('../../models/s_category_game')
 const { Game } = require('../../models/s_games')
 const { GameSubCategory } = require('../../models/s_sub_category_game')
 const { Plan } = require('../../models/s_plan_game')
-const { Game_Product } = require('../../models/s_game_product')
+const { GameProduct } = require('../../models/s_game_product')
 const RequestBody = require("../../utilities/requestBody");
 const Authentication = require('../auth');
 const CommonService = require("../../utilities/common");
@@ -194,22 +194,19 @@ class MlmProductsController extends Controller {
     async addMlmGameProduct() {
         try {
             const currentUserId = this.req.user;
-            const user = await Admin.findOne({ _id: currentUserId })
-            if (_.isEmpty(user)) {
-                return this.res.send({ status: 0, message: "User is not allowed to create" });
-            }
+
             let data = this.req.body;
 
-            const fieldsArray = ["name", "plan", "category", "sub_category", "prod_type", "country", "sku", "prod_image", "meta_title", "meta_keywords", "mets_desc", "description", "units", "company_expence", "gst_percent", "gst_amount", "pck_chrgs", "seller_disc", "courier_chr", "gst_trnx_fees", "others_taxes", "points", "auto_points", "commision", "auto_rcycle_comm", "status", "final_price", "auto_rcycle", "points_val_days", "auto_points_val_days", "points_switch"];
+            const fieldsArray = ["name", "plan", "games", "country", "hsnCode", "description", "unit_price", "gst_percent", "gst_amount", "final_price", "sponsor_commision", "auto_rcycle_comm", "auto_rcycle", "reward_rcycle", "shopping_amt_cycle", "points", "auto_points", "points_val_days", "auto_points_val_days", "status", "prod_image", "gallary_images", "meta_title", "meta_keywords", "mets_desc"];
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
             } else {
-                const newGame = await new Model(Game).store(data);
-                if (_.isEmpty(newGame)) {
-                    return this.res.send({ status: 0, message: "Game not saved" })
+                const newGameProduct = await new Model(GameProduct).store(data);
+                if (_.isEmpty(newGameProduct)) {
+                    return this.res.send({ status: 0, message: "Game product not saved" })
                 }
-                return this.res.send({ status: 1, message: "Game added successfully" });
+                return this.res.send({ status: 1, message: "Game product added successfully" });
             }
         }
         catch (error) {

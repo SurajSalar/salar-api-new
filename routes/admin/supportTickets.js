@@ -7,12 +7,12 @@ module.exports = (router, app) => {
         return ticketObj.ticketsListing();
     });
 
-    router.get('/getTicketDetails/:ticketId',  Authorization.isAdminAuthorised, (req, res, next) => {
+    router.get('/getTicketDetails/:ticketId', Authorization.isAdminAuthorised, (req, res, next) => {
         const ticketObj = (new SupportTicketsController()).boot(req, res);
         return ticketObj.getTicketDetails();
     });
 
-    router.post('/deleteTickets',  Authorization.isAdminAuthorised, (req, res, next) => {
+    router.post('/deleteTickets', Authorization.isAdminAuthorised, (req, res, next) => {
         const ticketObj = (new SupportTicketsController()).boot(req, res);
         return ticketObj.deleteTickets();
     });

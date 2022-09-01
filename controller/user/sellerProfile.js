@@ -372,8 +372,5 @@ class SellerProfileController extends Controller {
             return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
-
-
-
 }
 module.exports = UserProfileController;

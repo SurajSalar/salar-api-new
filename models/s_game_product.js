@@ -12,10 +12,10 @@ const GameProductSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Category'
     },
-    sub_category: {
+    games: [{
         type: Schema.Types.ObjectId,
-        ref: 'Category'
-    },
+        ref: 'Game'
+    }],
     prod_type: {
         type: Number,
         default: 0
@@ -24,29 +24,15 @@ const GameProductSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Country'
     },
-    sku: {
-        type: String,
-    },
-    prod_image: {
-        type: String,
-    },
-    meta_title: {
-        type: String,
-    },
-    meta_keywords: {
-        type: String,
-    },
-    mets_desc: {
+    hsnCode: {
         type: String,
     },
     description: {
         type: String,
     },
-    units: {
-        type: Number,
-    },
-    company_expence: {
-        type: Number,
+
+    unit_price: {
+        type: Number
     },
     gst_percent: {
         type: Number,
@@ -54,40 +40,39 @@ const GameProductSchema = Schema({
     gst_amount: {
         type: Number,
     },
-    pck_chrgs: {
+    final_price: {
         type: Number,
     },
-    seller_disc: {
+
+    prod_image: {
+        type: String,
+    },
+
+    status: {
         type: Number,
     },
-    courier_chr: {
+
+    auto_rcycle: {
         type: Number,
     },
-    gst_trnx_fees: {
+    reward_rcycle: {
         type: Number,
     },
-    others_taxes: {
+    shopping_amt_cycle: {
         type: Number,
     },
-    points: {
-        type: Number,
-    },
-    auto_points: {
-        type: Number,
-    },
-    commision: {
+
+    sponsor_commision: {
         type: Number,
     },
     auto_rcycle_comm: {
         type: Number,
     },
-    status: {
+
+    points: {
         type: Number,
     },
-    final_price: {
-        type: Number,
-    },
-    auto_rcycle: {
+    auto_points: {
         type: Number,
     },
     points_val_days: {
@@ -96,8 +81,15 @@ const GameProductSchema = Schema({
     auto_points_val_days: {
         type: Number,
     },
-    points_switch: {
-        type: Number,
+
+    meta_title: {
+        type: String,
+    },
+    meta_keywords: {
+        type: String,
+    },
+    mets_desc: {
+        type: String,
     },
     created_at: {
         type: Date,

@@ -17,4 +17,3 @@ const EtdDetails = mongoose.model('etd', etdSchema);
 module.exports = {
     EtdDetails: EtdDetails,
 }
-

@@ -8,7 +8,7 @@ const CountrySchema = Schema({
         type: String
     },
     nickname: {
-        type: Number
+        type: String
     },
     status: {
         type: Number,
@@ -23,4 +23,4 @@ const CountrySchema = Schema({
     }
 });
 
-const Country = module.exports = mongoose.model('Country', CountrySchema);
+module.exports = { Country: mongoose.model('Country', CountrySchema) };
