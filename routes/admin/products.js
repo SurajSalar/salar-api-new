@@ -46,4 +46,31 @@ module.exports = (router, app) => {
         const authObj = (new AdminProductController()).boot(req, res);
         return authObj.getProduct();
     });
+
+    router.post('/gst-govt-code', Authorization.isAdminAuthorised, (req, res, next) => {
+        const authObj = (new AdminProductController()).boot(req, res);
+        return authObj.addGstGovtCode();
+    });
+    router.get('/gst-govt-codes', Authorization.isAdminAuthorised, (req, res, next) => {
+        const authObj = (new AdminProductController()).boot(req, res);
+        return authObj.getGstGovtCode();
+    });
+
+    router.post('/attribute-unit', Authorization.isAdminAuthorised, (req, res, next) => {
+        const authObj = (new AdminProductController()).boot(req, res);
+        return authObj.addAttributeUnit();
+    });
+    router.get('/attribute-units', Authorization.isAdminAuthorised, (req, res, next) => {
+        const authObj = (new AdminProductController()).boot(req, res);
+        return authObj.getAttributeUnits();
+    });
+
+    router.post('/admin-attribute', Authorization.isAdminAuthorised, (req, res, next) => {
+        const authObj = (new AdminProductController()).boot(req, res);
+        return authObj.addProductAttribute();
+    });
+    router.get('/admin-attributes', Authorization.isAdminAuthorised, (req, res, next) => {
+        const authObj = (new AdminProductController()).boot(req, res);
+        return authObj.getProductAttribute();
+    });
 }

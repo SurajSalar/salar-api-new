@@ -1,32 +1,30 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const ChildCategorySchema = Schema({
+const AttributeSchema = Schema({
     name: {
         type: String
     },
-    description: {
+    value: {
         type: String
     },
     status: {
         type: Number
     },
-    type: {
-        type: Number,
-    },
-    seller: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Seller'
-    }],
-    category: [{
+    category: {
         type: Schema.Types.ObjectId,
         ref: 'Category'
-    }],
-    subcategory: [{
+    },
+    sub_category: {
         type: Schema.Types.ObjectId,
         ref: 'SubCategory'
-    }],
-    image: {
-        type: String,
+    },
+    child_category: {
+        type: Schema.Types.ObjectId,
+        ref: 'SubCategory'
+    },
+    unit: {
+        type: Schema.Types.ObjectId,
+        ref: 'Unit'
     },
     created_at: {
         type: Date,
@@ -38,4 +36,4 @@ const ChildCategorySchema = Schema({
     }
 });
 
-const ChildCategory = module.exports = { ChildCategory: mongoose.model('ChildCategory', ChildCategorySchema) };
+module.exports = { Attribute: mongoose.model('Attribute', AttributeSchema) };

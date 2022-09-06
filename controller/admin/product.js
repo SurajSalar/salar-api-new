@@ -7,10 +7,15 @@ const { SubCategory } = require('../../models/s_sub_category')
 const { ChildCategory } = require('../../models/s_child_category')
 const { Brand } = require('../../models/s_brand')
 const { Product } = require('../../models/s_product')
+const { GovtGstCode } = require("../../models/s_gov_and_gst_code")
+const { Unit } = require("../../models/s_unit")
+const { Attribute } = require("../../models/s_attribute")
 const RequestBody = require("../../utilities/requestBody");
 const Authentication = require('../auth');
 const CommonService = require("../../utilities/common");
 const Services = require('../../utilities/index');
+
+const Model = require("../../utilities/model");
 
 class ProductsController extends Controller {
     constructor() {
@@ -19,6 +24,108 @@ class ProductsController extends Controller {
         this.services = new Services();
         this.requestBody = new RequestBody();
         this.authentication = new Authentication();
+    }
+
+    async addGstGovtCode() {
+        try {
+            let data = this.req.body;
+
+            const fieldsArray = ["category", "status", "name", "gst", "price_range", "govt_code"];
+            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+            } else {
+                const newCode = await new Model(GovtGstCode).store(data);
+                if (_.isEmpty(newCode)) {
+                    return this.res.send({ status: 0, message: "Govt Gst Code not saved" })
+                }
+                return this.res.send({ status: 1, message: "Govt Gst Code added successfully" });
+            }
+        }
+        catch (error) {
+            console.log("error- ", error);
+            this.res.status(500).send({ status: 0, message: error });
+        }
+    }
+    async getGstGovtCode() {
+        try {
+            const gstgovtcodes = await GovtGstCode.find({ status: true, });
+            if (_.isEmpty(gstgovtcodes)) {
+                return this.res.send({ status: 0, message: "GST Govt codes not found" });
+            }
+            return this.res.send({ status: 1, data: gstgovtcodes });
+
+        } catch (error) {
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+    async addAttributeUnit() {
+        try {
+
+            let data = this.req.body;
+
+            const fieldsArray = ["name", "value", "status"];
+            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+            } else {
+                const newCode = await new Model(Unit).store(data);
+                if (_.isEmpty(newCode)) {
+                    return this.res.send({ status: 0, message: "Unit not saved" })
+                }
+                return this.res.send({ status: 1, message: "Unit added successfully" });
+            }
+        }
+        catch (error) {
+            console.log("error- ", error);
+            this.res.status(500).send({ status: 0, message: error });
+        }
+    }
+    async getAttributeUnits() {
+        try {
+            const attrUnits = await Unit.find({ status: true, });
+            if (_.isEmpty(attrUnits)) {
+                return this.res.send({ status: 0, message: "Units not found" });
+            }
+            return this.res.send({ status: 1, data: attrUnits });
+
+        } catch (error) {
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+    async addProductAttribute() {
+        try {
+
+            let data = this.req.body;
+
+            const fieldsArray = ["name", "value", "status", "category", "unit"];
+            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+            } else {
+                const newAttribute = await new Model(Attribute).store(data);
+                if (_.isEmpty(newAttribute)) {
+                    return this.res.send({ status: 0, message: "Attribute not saved" })
+                }
+                return this.res.send({ status: 1, message: "Attribute added successfully" });
+            }
+        }
+        catch (error) {
+            console.log("error- ", error);
+            this.res.status(500).send({ status: 0, message: error });
+        }
+    }
+    async getProductAttribute() {
+        try {
+            const attributes = await Attribute.find({ status: true, });
+            if (_.isEmpty(attributes)) {
+                return this.res.send({ status: 0, message: "Attributes not found" });
+            }
+            return this.res.send({ status: 1, data: attributes });
+
+        } catch (error) {
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
     }
     async addCategory() {
         try {
@@ -43,7 +150,7 @@ class ProductsController extends Controller {
         }
         catch (error) {
             console.log("error- ", error);
-            this.res.send({ status: 0, message: error });
+            this.res.status(500).send({ status: 0, message: error });
         }
     }
     async getCategory() {
@@ -181,7 +288,7 @@ class ProductsController extends Controller {
             }
             let data = this.req.body;
 
-            const fieldsArray = ["name", "category", "sub_category", "child_category", "seller", "brand", "prod_image", "gallary_image", "description", "status", "min_purchase_qty", "max_purchase_qty", "seller_type", "sku", "barcode", "unit_price", "commision", "gst_percent", "gst_amount", "final_price", "courier_chr", "pck_chrgs", "handling_chrgs", "sponsor_commission", "discout_point_aplicable", "return_applicable", "cancel_chrgs", "refund_applicable", "refund_amount", "replacement_applicable", "replacement_day", "delivery_location", "shipping_day", "attributes", "stock", "low_stock_warning", "featured_product", "status", "meta_title", "meta_keywords", "mets_desc"];
+            const fieldsArray = ["name", "category", "sub_category", "child_category", "brand", "prod_image", "gallary_image", "description", "status", "min_purchase_qty", "max_purchase_qty", "seller_type", "sku", "unit_price", "commision", "gst_percent", "gst_amount", "final_price", "courier_chr", "pck_chrgs", "handling_chrgs", "sponsor_commission", "discout_point_aplicable", "return_applicable", "cancel_chrgs", "refund_applicable", "refund_amount", "replacement_applicable", "replacement_day", "delivery_location", "shipping_day", "stock", "low_stock_warning", "featured_product", "status", "meta_title", "meta_keywords", "mets_desc"];
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });

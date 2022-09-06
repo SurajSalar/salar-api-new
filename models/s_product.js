@@ -97,7 +97,8 @@ const ProductSchema = Schema({
         type: Number
     },
     delivery_location: {
-        type: Number
+        type: Schema.Types.ObjectId,
+        ref: 'Country'
     },
     shipping_day: {
         type: Number
@@ -136,4 +137,4 @@ const ProductSchema = Schema({
     }
 });
 
-const Product = module.exports = mongoose.model('Product', ProductSchema);
+const Product = module.exports = { Product: mongoose.model('Product', ProductSchema) };

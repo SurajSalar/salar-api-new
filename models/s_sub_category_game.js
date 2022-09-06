@@ -34,4 +34,4 @@ const GameSubCategorySchema = Schema({
     }
 });
 
-const GameSubCategory = module.exports = mongoose.model('GameSubCategory', GameSubCategorySchema);
+const GameSubCategory = module.exports = {GameSubCategory: mongoose.model('GameSubCategory', GameSubCategorySchema)};

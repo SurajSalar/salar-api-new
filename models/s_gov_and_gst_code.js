@@ -1,32 +1,32 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const ChildCategorySchema = Schema({
+const GovtGstCodeSchema = Schema({
     name: {
         type: String
     },
-    description: {
+    gst: {
+        type: Number
+    },
+    price_range: {
+        type: String
+    },
+    govt_code: {
         type: String
     },
     status: {
         type: Number
     },
-    type: {
-        type: Number,
-    },
-    seller: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Seller'
-    }],
-    category: [{
+    category: {
         type: Schema.Types.ObjectId,
         ref: 'Category'
-    }],
-    subcategory: [{
+    },
+    sub_category: {
         type: Schema.Types.ObjectId,
         ref: 'SubCategory'
-    }],
-    image: {
-        type: String,
+    },
+    child_category: {
+        type: Schema.Types.ObjectId,
+        ref: 'SubCategory'
     },
     created_at: {
         type: Date,
@@ -38,4 +38,4 @@ const ChildCategorySchema = Schema({
     }
 });
 
-const ChildCategory = module.exports = { ChildCategory: mongoose.model('ChildCategory', ChildCategorySchema) };
+module.exports = { GovtGstCode: mongoose.model('GovtGstCode', GovtGstCodeSchema) };
