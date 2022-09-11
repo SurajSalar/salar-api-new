@@ -59,7 +59,7 @@ class OrderController extends Controller {
             if (digitalOrders.length) {
                 let orders = []
                 let totalPrice = 0;
-                for (let order of ecommOrders) {
+                for (let order of digitalOrders) {
                     let temp = {}
                     temp.user_id = this.req.user;
                     temp.game_prod_id = order.game_prod_id._id;
@@ -80,7 +80,7 @@ class OrderController extends Controller {
                 let insertSummary = await OrderSummary.insertMany([{
                     order_id: orderIds,
                     user_id: this.req.user,
-                    refferal_id: "",
+                    // refferal_id: "",
                     total_price: totalPrice,
                     tranx_fees: this.req.body.tranx_fees,
                     trnx_method: this.req.body.trnx_method
@@ -111,7 +111,7 @@ class OrderController extends Controller {
                 let insertSummary = await OrderSummary.insertMany([{
                     order_id: orderIds,
                     user_id: this.req.user,
-                    refferal_id: "",
+                    // refferal_id: "",
                     total_price: totalPrice,
                     tranx_fees: this.req.body.tranx_fees,
                     trnx_method: this.req.body.trnx_method
