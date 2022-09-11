@@ -20,7 +20,6 @@ class AdminUserController extends Controller {
     async getAllUsers() {
         try {
             return this.res.send({ status: 1, message: "all user list" });
-
         } catch (error) {
             console.log("error- ", error);
             return this.res.send({ status: 0, message: "internal server error" });

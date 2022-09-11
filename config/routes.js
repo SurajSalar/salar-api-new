@@ -12,6 +12,7 @@ module.exports = (router, app) => {
     require('../routes/user/userProfile')(router, app)
     require('../routes/user/kycDetails')(router, app)
     require('../routes/user/bankDetails')(router, app)
+    require('../routes/user/orders')(router, app)
     require('../routes/user/website')(router, app)
     // Common Routes
     require('../routes/common/supportTickets')(router, app)

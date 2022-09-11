@@ -10,7 +10,7 @@ class Authorization {
         try {
             //if can verify the token, set req.user and pass to next middleware
             const access_token = await AccessTokens.findOne({ token: token });
-            if (access_token.role != 'individual' && access_token.role != 'organisation') {
+            if (access_token && access_token.role != 'individual' && access_token.role != 'organisation') {
                 return res.send({ status: 0, message: "Access denied. Not a user" })
             }
             if (access_token) {

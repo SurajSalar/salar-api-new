@@ -373,4 +373,4 @@ class SellerProfileController extends Controller {
         }
     }
 }
-module.exports = UserProfileController;
+module.exports = SellerProfileController;
