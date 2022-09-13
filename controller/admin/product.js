@@ -155,7 +155,11 @@ class ProductsController extends Controller {
     }
     async getCategory() {
         try {
-            const categry = await Category.find({ status: true, });
+            let query = {};
+            if (this.req.query.status)
+                query['status'] = this.req.query.status
+
+            const categry = await Category.find(query);
             if (_.isEmpty(categry)) {
                 return this.res.send({ status: 0, message: "Category not found" });
             }
@@ -193,7 +197,13 @@ class ProductsController extends Controller {
     }
     async getSubCategory() {
         try {
-            const subcategry = await SubCategory.find({ status: true, });
+            let query = {};
+            if (this.req.query.status)
+                query['status'] = this.req.query.status
+
+            if (this.req.query.category)
+                query['category'] = this.req.query.category
+            const subcategry = await SubCategory.find(query);
             if (_.isEmpty(subcategry)) {
                 return this.res.send({ status: 0, message: "Category not found" });
             }
@@ -231,6 +241,16 @@ class ProductsController extends Controller {
     }
     async getChildCategory() {
         try {
+            let query = {};
+            if (this.req.query.status)
+                query['status'] = this.req.query.status
+
+            if (this.req.query.category)
+                query['category'] = this.req.query.category
+
+            if (this.req.query.subcategory)
+                query['subcategory'] = this.req.query.subcategory
+
             const childcategry = await ChildCategory.find({ status: true, });
             if (_.isEmpty(childcategry)) {
                 return this.res.send({ status: 0, message: "Child category not found" });
@@ -269,7 +289,20 @@ class ProductsController extends Controller {
     }
     async getBrand() {
         try {
-            const brnad = await Brand.find({ status: true, });
+            let query = {};
+            if (this.req.query.status)
+                query['status'] = this.req.query.status
+
+            if (this.req.query.category)
+                query['category'] = this.req.query.category
+
+            if (this.req.query.sub_category)
+                query['sub_category'] = this.req.query.sub_category
+
+            if (this.req.query.child_category)
+                query['child_category'] = this.req.query.child_category
+
+            const brnad = await Brand.find(query);
             if (_.isEmpty(brnad)) {
                 return this.res.send({ status: 0, message: "Brand not found" });
             }

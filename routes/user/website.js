@@ -14,6 +14,10 @@ module.exports = (router, app) => {
         const websiteObj = (new WebsiteController()).boot(req, res);
         return websiteObj.getSubCategoryiesUA();
     });
+    router.get('/ua/:category/sub-categories', (req, res, next) => {
+        const websiteObj = (new WebsiteController()).boot(req, res);
+        return websiteObj.getSubCategoryiesOfCategoryUA();
+    });
     router.get('/ua/child-categories', (req, res, next) => {
         const websiteObj = (new WebsiteController()).boot(req, res);
         return websiteObj.getChildCategoryiesUA();
