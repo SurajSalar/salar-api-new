@@ -81,6 +81,11 @@ const teamProductStages = [
             teamlevel: 1,
             teamIncomePercentage: 1,
             teamIncomeAmount: 1,
+            teamIncomeAmountOfUser: {
+                $divide: ["$teamIncomeAmount", {
+                    $multiply: ["$teamlevel.depth", "$teamlevel.ULDownline"]
+                }]
+            },
             leftAmount: {
                 $subtract: ["$commission_amount", "$teamIncomeAmount"]
             },
@@ -106,6 +111,7 @@ const teamProductStages = [
             teamlevel: 1,
             teamIncomePercentage: 1,
             teamIncomeAmount: 1,
+            teamIncomeAmountOfUser:1,
             leftAmount: 1,
             ULDownlineShare: 1,
             ULDownlineAmount: 1,
@@ -176,6 +182,11 @@ const downloadFilesStages = [
             ULDownline: 1,
             'Team Income Percentage': "$teamIncomePercentage",
             'Team Income Amount': "$teamIncomeAmount",
+            'Team Income Amount Of User': {
+                $divide: ["$teamIncomeAmount", {
+                    $multiply: ["$Level", "$ULDownline"]
+                }]
+            },
             leftAmount: {
                 $subtract: ["$commissionAmount", "$teamIncomeAmount"]
             },
@@ -206,6 +217,7 @@ const downloadFilesStages = [
             ULDownline: 1,
             'Team Income Percentage': 1,
             'Team Income Amount': 1,
+            'Team Income Amount Of User':1,
             "Left Amount": "$leftAmount",
             ULDownlineShare: 1,
             ULDownlineAmount: 1,
@@ -386,7 +398,7 @@ class TeamProductsController extends Controller {
             "filteredFields": ["Category"] }
        Return: JSON String
        ********************************************************/
-       async downloadFiles() {
+       async downloadTeamProductFiles() {
         try {
             let data =  this.req.body;
             if (!data.type) {
@@ -398,7 +410,7 @@ class TeamProductsController extends Controller {
                 console.log(`query: ${JSON.stringify(query)}`)
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                ["Created Date", "Category", "SubCategory", "ChildCategory", "Seller", "Brand", "Price", "Product Id", "Product Name", "Commission", "Commission Amount", "Plan", "Level", "ULDownline", "Team Income Percentage", "Team Income Amount", "Left Amount", "ULDownlineShare", "ULDownlineAmount", "ULDownline Amount Of User", "Remaining Amount"]
+                ["Created Date", "Category", "SubCategory", "ChildCategory", "Seller", "Brand", "Price", "Product Id", "Product Name", "Commission", "Commission Amount", "Plan", "Level", "ULDownline", "Team Income Percentage", "Team Income Amount", "Team Income Amount Of User", "Left Amount", "ULDownlineShare", "ULDownlineAmount", "ULDownline Amount Of User", "Remaining Amount"]
 
             data['model'] = TeamProducts;
             data['stages'] = downloadFilesStages;

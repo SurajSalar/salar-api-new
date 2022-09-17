@@ -22,9 +22,9 @@ module.exports = (router, app) => {
         return teamProductObj.deleteTeamProducts();
     });
 
-    router.post('/downloadFiles', Authorization.isAdminAuthorised, (req, res, next) => {
+    router.post('/downloadTeamProductFiles', Authorization.isAdminAuthorised, (req, res, next) => {
         const teamProductObj = (new TeamProductsController()).boot(req, res);
-        return teamProductObj.downloadFiles();
+        return teamProductObj.downloadTeamProductFiles();
     });
 
 }
