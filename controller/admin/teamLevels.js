@@ -22,14 +22,14 @@ class TeamLevelsController extends Controller {
       {
           "width": 1,
           "depth": 2,
-          "levels": 3
+          "ULDownline": 3
       }
    Return: JSON String
    ********************************************************/
    async addAndUpdateTeamLevel() {
     try {
         let data = this.req.body;
-        const fieldsArray = ["width","depth","levels"]
+        const fieldsArray = ["width","depth","ULDownline"]
         const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
         if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
             return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
@@ -37,10 +37,10 @@ class TeamLevelsController extends Controller {
         const getTeamLevel = await TeamLevels.findOne({isDeleted: false});
         if (_.isEmpty(getTeamLevel)) {
             const newTeamLevel = await new Model(TeamLevels).store(data);
-        if (_.isEmpty(newTeamLevel)) {
-            return this.res.send({ status: 0, message: "Details not saved" });
-        }
-        return this.res.send({ status: 1, message: "Team Level details created successfully", data: newTeamLevel });
+            if (_.isEmpty(newTeamLevel)) {
+                return this.res.send({ status: 0, message: "Details not saved" });
+            }
+            return this.res.send({ status: 1, message: "Team Level details created successfully", data: newTeamLevel });
         }else{
             const updatedTeamLevel = await TeamLevels.findOneAndUpdate({_id: getTeamLevel._id},data,{upsert:true, new:true})
             console.log("updatedTeamLevel", updatedTeamLevel)
@@ -92,6 +92,25 @@ class TeamLevelsController extends Controller {
                 return this.res.send({ status: 0, message: "Please send proper params" });
             }
             const teamLevel = await TeamLevels.findOne({ _id: this.req.params.teamLevelId, isDeleted:false }, { __v: 0 });
+            if (_.isEmpty(teamLevel))
+                return this.res.send({ status: 0, message: "Team Level not found" });
+            return this.res.send({ status: 1, message: "Details are: ", data: teamLevel });
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+
+    /********************************************************
+    Purpose: Get Team Levels 
+    Method: GET
+    Authorisation: true
+    Return: JSON String
+    ********************************************************/
+    async getTeamLevel() {
+        try {
+            const teamLevel = await TeamLevels.findOne({ isDeleted:false }, { __v: 0 });
             if (_.isEmpty(teamLevel))
                 return this.res.send({ status: 0, message: "Team Level not found" });
             return this.res.send({ status: 1, message: "Details are: ", data: teamLevel });

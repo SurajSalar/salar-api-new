@@ -8,6 +8,7 @@ module.exports = (router, app) => {
     require('../routes/admin/products')(router, app)
     require('../routes/admin/settings')(router, app)
     require('../routes/admin/teamLevels')(router, app)
+    require('../routes/admin/teamProducts')(router, app)
     // User Routes
     require('../routes/user/auth')(router, app)
     require('../routes/user/userProfile')(router, app)

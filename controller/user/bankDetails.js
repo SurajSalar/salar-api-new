@@ -2,7 +2,7 @@ const _ = require("lodash");
 const { ObjectID } = require('mongodb');
 
 const Controller = require("../base");
-const { BankDetails } = require('../../models/s_bankDetails');
+const { BankDetails } = require('../../models/s_bank_details');
 const { Users } = require('../../models/s_users');
 const Model = require("../../utilities/model");
 const RequestBody = require("../../utilities/requestBody");

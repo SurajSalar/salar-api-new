@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const TeamLevelsSchema = new Schema({
     width: { type: Number },
     depth: { type: Number },
-    levels: { type: Number },
+    ULDownline: { type: Number },
     isDeleted: { type: Boolean, default: false },
     status: { type: Boolean, default: true }
 }, { timestamps: true });

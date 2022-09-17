@@ -17,6 +17,11 @@ module.exports = (router, app) => {
         return teamLevelObj.getTeamLevelDetails();
     });
 
+    router.get('/getTeamLevel', Authorization.isAdminAuthorised, (req, res, next) => {
+        const teamLevelObj = (new TeamLevelsController()).boot(req, res);
+        return teamLevelObj.getTeamLevel();
+    });
+
     router.post('/changeStatusOfTeamLevels', Authorization.isAdminAuthorised, (req, res, next) => {
         const teamLevelObj = (new TeamLevelsController()).boot(req, res);
         return teamLevelObj.changeStatusOfTeamLevels();

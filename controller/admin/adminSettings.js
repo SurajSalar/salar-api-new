@@ -3,7 +3,7 @@ const _ = require("lodash");
 const Controller = require("../base");
 const Model = require("../../utilities/model");
 
-const { AdminSettings } = require('../../models/s_adminSettings');
+const { AdminSettings } = require('../../models/s_admin_settings');
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
 
