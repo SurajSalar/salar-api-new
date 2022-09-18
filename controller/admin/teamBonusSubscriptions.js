@@ -51,7 +51,7 @@ const downloadFilesStages = [{
 			}]
 		},
 		Points: "$points",
-		"Points Validity":  { $dateToString: { format: "%Y-%m-%d", date: "$pointsValidity"} },
+		"Points Validity": "$pointsValidity",
 		Code: "$code",
 		Date:  { $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} }
 	}
@@ -76,7 +76,7 @@ class TeamBonusSubscriptionsController extends Controller {
             GSTPercentage: 10,
             price: 500,
             points: 50,
-            pointsValidity: "2022-09-31",
+            pointsValidity: 30,
             code: "START",
             teamBonusSubscriptionId:"" //optional
       }

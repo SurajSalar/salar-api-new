@@ -7,7 +7,7 @@ const TeamBonusSubscriptionsSchema = new Schema({
     GSTPercentage: { type: Number },
     price: { type: Number },
     points: { type: Number },
-    pointsValidity: { type: Date},
+    pointsValidity: { type: Number},
     code: { type: String },
     isDeleted: { type: Boolean, default: false }
 },{ timestamps: true });
