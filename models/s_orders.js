@@ -17,7 +17,25 @@ const OrderSchema = Schema({
     },
     parent_id: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'Order'
+    },
+    child_ids: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Order'
+    }],
+    initiater_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'Order'
+    },
+    isInitiater: {
+        type: Boolean,
+        default: false
+    }, 
+    position: {
+        type: Number
+    },
+    depth: {
+        type: Number
     },
     user_id: {
         type: Schema.Types.ObjectId,

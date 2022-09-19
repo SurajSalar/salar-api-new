@@ -47,8 +47,8 @@ module.exports = (router, app) => {
         const authObj = (new AdminGameController()).boot(req, res);
         return authObj.addMlmGameProduct();
     });
-    router.get('/admin-games', Authorization.isAdminAuthorised, (req, res, next) => {
+    router.get('/admin-games-products', Authorization.isAdminAuthorised, (req, res, next) => {
         const authObj = (new AdminGameController()).boot(req, res);
-        return authObj.getGame();
+        return authObj.getGameProducts();
     });
 }

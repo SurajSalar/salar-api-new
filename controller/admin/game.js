@@ -214,13 +214,13 @@ class MlmProductsController extends Controller {
             this.res.send({ status: 0, message: error });
         }
     }
-    async getGame() {
+    async getGameProducts() {
         try {
-            const game = await Game.find({ status: true, });
-            if (_.isEmpty(game)) {
-                return this.res.send({ status: 0, message: "Game not found" });
+            const gameProducts = await GameProduct.find({ status: true, });
+            if (_.isEmpty(gameProducts)) {
+                return this.res.send({ status: 0, message: "Games not found" });
             }
-            return this.res.send({ status: 1, data: game });
+            return this.res.send({ status: 1, data: gameProducts });
 
         } catch (error) {
             return this.res.send({ status: 0, message: "Internal server error" });
