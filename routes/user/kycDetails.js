@@ -7,7 +7,7 @@ module.exports = (router, app) => {
         return kycObj.addAndUpdateKycDetails();
     });
 
-    router.post('/getKycDetails', Authorization.isAuthorised, (req, res, next) => {
+    router.get('/getKycDetails/:kycId', Authorization.isAuthorised, (req, res, next) => {
         const kycObj = (new KycDetailsController()).boot(req, res);
         return kycObj.getKycDetails();
     });

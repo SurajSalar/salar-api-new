@@ -24,10 +24,8 @@ class KycDetailsController extends Controller {
         {
             "selectId": "Aadhar Card",
             "numberProof": "12345678901",
-            "imageProof": "aadhar.png",
-            "organisationName": "Salar",
-            "roleInOrganisation": "Manager",
-            "organisationCertificateNumber": "ASDFERWSDSDFSRWES",
+            "frontImage": "aadhar.png",
+            "backImage": "aadhar.png",
             "kycId":""
         }               
         Return: JSON String
@@ -37,7 +35,7 @@ class KycDetailsController extends Controller {
                     const currentUserId = this.req.user;
                     let data = this.req.body;
                     data.userId = currentUserId;
-                    const fieldsArray = ["selectId", "numberProof","imageProof","organisationName","roleInOrganisation","organisationCertificateNumber"];
+                    const fieldsArray = ["selectId", "numberProof","frontImage","backImage"];
                     const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
                     if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                         return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
@@ -92,16 +90,13 @@ class KycDetailsController extends Controller {
 
      /********************************************************
     Purpose: Get Kyc Details
-    Method: Post
-    {
-        "kycId":""
-    }
+    Method: GET
     Authorisation: true            
     Return: JSON String
     ********************************************************/
     async getKycDetails() {
         try {
-            const data = this.req.body;
+            const data = this.req.params;
             if (!data.kycId) {
                 return this.res.send({ status: 0, message: "Please send kycId" });
             }

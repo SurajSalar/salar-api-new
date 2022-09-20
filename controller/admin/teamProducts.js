@@ -8,7 +8,7 @@ const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
 const Model = require("../../utilities/model");
 const {ObjectID} = require('mongodb');
-const DownloadsController = require('../common/downloads')
+const DownloadsController = require('../common/downloads');
 
 
 

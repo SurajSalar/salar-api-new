@@ -14,6 +14,7 @@ module.exports = (router, app) => {
     require('../routes/user/auth')(router, app)
     require('../routes/user/userProfile')(router, app)
     require('../routes/user/kycDetails')(router, app)
+    require('../routes/user/orgDetails')(router, app)
     require('../routes/user/bankDetails')(router, app)
     require('../routes/user/orders')(router, app)
     require('../routes/user/website')(router, app)

@@ -8,6 +8,10 @@ const bodyParser = require('body-parser');
 const db = require('./config/db')
 const fs = require('fs');
 const http = require('http');
+// for capturing device type
+const device = require('express-device');
+app.use(device.capture());
+
 app.use(bodyParser.json({ limit: '100mb', type: 'application/json' }));
 app.use(bodyParser.urlencoded({
 	limit: '100mb',

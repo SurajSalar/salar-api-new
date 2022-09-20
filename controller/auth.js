@@ -4,7 +4,7 @@ const moment = require('moment');
 
 const Controller = require('./base');
 const { AccessTokens } = require('../models/s_auth')
-
+const Model = require("../utilities/model");
 
 
 class AuthController extends Controller {
@@ -24,7 +24,7 @@ class AuthController extends Controller {
                 data.refreshTokenExpiryTime = moment().add(parseInt(720), 'minutes');
                 data.role = data.role;
                 delete data.id;
-                await AccessTokens.findOneAndUpdate({ userId: data.userId }, data, { upsert: true, new: true });
+                await new Model(AccessTokens).store(data);
                 return resolve({ token, refreshToken });
             } catch (err) {
                 console.log("Get token", err);

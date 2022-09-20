@@ -98,7 +98,7 @@ class UserProfileController extends Controller {
         try {
             const currentUserId = this.req.user;
             if (currentUserId) {
-                const user = await Users.findOne({ _id: currentUserId, isDeleted: false, status: true, }, { password: 0, transactionPassword:0, _v: 0 });
+                const user = await Users.findOne({ _id: currentUserId, isDeleted: false, status: true, }, { password: 0, transactionPassword:0, _v: 0 }).populate('countryId',{ name: 1, iso: 1 });
                 if (_.isEmpty(user)) {
                     return this.res.send({ status: 0, message: "User not found" });
                 }
@@ -122,7 +122,7 @@ class UserProfileController extends Controller {
       "gender":"female",
       "age":"25",
       "emailId":"lakshmimattafreelancer@gmail.com",
-      "country":"India",
+      "countryId":"",
       "mobileNo":"7207334583"
     }               
     Return: JSON String
@@ -132,6 +132,12 @@ class UserProfileController extends Controller {
             const currentUserId = this.req.user;
             const data = this.req.body;
             delete data.emailId
+            if(data.countryId){
+                const validateCountry = await Country.findOne({_id: this.req.body.countryId, status: 1});
+                if (_.isEmpty(validateCountry)) {
+                    return this.res.send({ status: 0, message: "Country details not found" })
+                }
+            }
             if(data.fullName){
                 const validateName = await this.commonService.nameValidation(data.fullName);
                 if(!validateName){
@@ -170,7 +176,7 @@ class UserProfileController extends Controller {
         "zipCode":"533287",
         "mobileNo":"7207334583",
         "emailId":"lakshmimattafreelancer@gmail.com",
-        "country":"India",
+        "countryId":"",
         "GST":"ewsfwe",
     }         
     Return: JSON String
@@ -179,10 +185,14 @@ class UserProfileController extends Controller {
         try {
             const currentUserId = this.req.user;
             let data = this.req.body
-            const fieldsArray = ["name", "addressLine1","addressLine2","city","GST","country","zipCode","mobileNo","emailId"];
+            const fieldsArray = ["name", "addressLine1","addressLine2","city","GST","countryId","zipCode","mobileNo","emailId"];
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+            }
+            const validateCountry = await Country.findOne({_id: this.req.body.countryId, status: 1});
+            if (_.isEmpty(validateCountry)) {
+                return this.res.send({ status: 0, message: "Country details not found" })
             }
             const validateEmail = await this.commonService.emailIdValidation(data.emailId);
             if(!validateEmail){
@@ -227,7 +237,7 @@ class UserProfileController extends Controller {
         "zipCode":"533287",
         "mobileNo":"7207334583",
         "emailId":"lakshmimattafreelancer@gmail.com",
-        "country":"India",
+        "countryId":"",
         "GST":"ewsfwe",
         "addressId":"5c9df23b82ddca1298d855ba"
     }      
@@ -237,10 +247,14 @@ class UserProfileController extends Controller {
         try {
             const currentUserId = this.req.user;
             let data = this.req.body
-            const fieldsArray = ["addressId","name", "addressLine1","addressLine2","city","GST","country","zipCode","mobileNo","emailId"];
+            const fieldsArray = ["addressId","name", "addressLine1","addressLine2","city","GST","countryId","zipCode","mobileNo","emailId"];
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+            }
+            const validateCountry = await Country.findOne({_id: this.req.body.countryId, status: 1});
+            if (_.isEmpty(validateCountry)) {
+                return this.res.send({ status: 0, message: "Country details not found" })
             }
             const validateEmail = await this.commonService.emailIdValidation(data.emailId);
             if(!validateEmail){
@@ -312,7 +326,7 @@ class UserProfileController extends Controller {
         try {
             const currentUserId = this.req.user;
             if (currentUserId) {
-                let user = await Users.findOne({ _id: currentUserId, isDeleted: false, status: true }, { shippingAddresses: 1 });
+                let user = await Users.findOne({ _id: currentUserId, isDeleted: false, status: true }, { shippingAddresses: 1 }).populate('countryId',{ name: 1, iso: 1 }).populate('shippingAddresses.countryId',{ name: 1, iso: 1 });
                 if (_.isEmpty(user)) {
                     return this.res.send({ status: 0, message: "User not found"});
                 }
@@ -362,7 +376,7 @@ class UserProfileController extends Controller {
         try {
             const currentUserId = this.req.user;
             if (currentUserId) {
-                const userDetails = await Users.find({ _id: ObjectID(currentUserId), "shippingAddresses": { $elemMatch: { defaultAddress: true } } }, { "shippingAddresses.$": 1 })
+                const userDetails = await Users.find({ _id: ObjectID(currentUserId), "shippingAddresses": { $elemMatch: { defaultAddress: true } } }, { "shippingAddresses.$": 1 }).populate('shippingAddresses.countryId',{ name: 1, iso: 1 });
                 if (_.isEmpty(userDetails)) {
                     return this.res.send({ status: 0, message: "Address details not found"});
                 }
