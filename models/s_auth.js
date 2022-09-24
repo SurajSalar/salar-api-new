@@ -9,7 +9,7 @@
      adminId: { type: Schema.Types.ObjectId, ref: 'Admin' },
      token: { type: String },
      refreshToken: { type: String },
-     action: { type: String, enum:["Login", "Logout"] },
+     action: { type: String, enum:["Login", "Logout", "Relogged"] },
      ipAddress: { type: String },
      role: { type: String },
      device: { type: String },

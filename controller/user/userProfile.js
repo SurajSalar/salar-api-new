@@ -7,6 +7,7 @@ const fs = require('fs');
 
 const Controller = require("../base");
 const { Users } = require('../../models/s_users');
+const { Country } = require('../../models/s_country');
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
 
@@ -98,7 +99,7 @@ class UserProfileController extends Controller {
         try {
             const currentUserId = this.req.user;
             if (currentUserId) {
-                const user = await Users.findOne({ _id: currentUserId, isDeleted: false, status: true, }, { password: 0, transactionPassword:0, _v: 0 }).populate('countryId',{ name: 1, iso: 1 });
+                const user = await Users.findOne({ _id: currentUserId, isDeleted: false, status: true, }, { password: 0, transactionPassword:0, _v: 0 }).populate('countryId',{ name: 1, iso: 1, nickname: 1 }).populate('shippingAddresses.countryId',{ name: 1, iso: 1, nickname: 1 });
                 if (_.isEmpty(user)) {
                     return this.res.send({ status: 0, message: "User not found" });
                 }
@@ -123,7 +124,8 @@ class UserProfileController extends Controller {
       "age":"25",
       "emailId":"lakshmimattafreelancer@gmail.com",
       "countryId":"",
-      "mobileNo":"7207334583"
+      "mobileNo":"7207334583",
+      "image":""
     }               
     Return: JSON String
     ********************************************************/
@@ -159,6 +161,7 @@ class UserProfileController extends Controller {
             await Users.findByIdAndUpdate(currentUserId, data, { new: true });
             return this.res.send({ status: 1, message: "User details updated successfully"});
         } catch (error) {
+            console.log("error", error)
             return this.res.send({ status: 0, message: "Internal server error" });
         }
     }

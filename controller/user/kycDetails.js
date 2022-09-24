@@ -75,6 +75,10 @@ class KycDetailsController extends Controller {
                         return this.res.send({ status: 1, message: "Kyc details updated successfully" });
 
                     }else{
+                        const getKyc = await KycDetails.findOne({userId: currentUserId, isDeleted: false})
+                        if (!_.isEmpty(getKyc)) {
+                            return this.res.send({ status: 0, message: "Kyc details exists" })
+                        }
                         const newKyc = await new Model(KycDetails).store(data);
                         if (_.isEmpty(newKyc)) {
                             return this.res.send({ status: 0, message: "Kyc details not saved" })

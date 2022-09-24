@@ -14,7 +14,7 @@ const AdminSchema = new Schema({
     registerId: { type: String },
     registerYear: { type: String },
     status: { type: Boolean, default: true },
-    role: { type: String , enum: ['admin']},
+    role: { type: String , enum: ['admin', 'staff']},
 }, {
     timestamps: true
 });

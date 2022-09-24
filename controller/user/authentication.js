@@ -89,7 +89,7 @@ class UsersController extends Controller {
                 return this.res.send({ status: 0, message: "Max word limit - 15 (with Mix of Capital,Small Letters , One Numerical and One Special Character" });
             }
             if(this.req.body.sponserId){
-                const userExists = await Users.findOne({sponserId: this.req.body.sponserId, isDeleted: false});
+                const userExists = await Users.findOne({registerId: this.req.body.sponserId, isDeleted: false});
                 if (_.isEmpty(userExists)) {
                     return this.res.send({ status: 0, message: "Invalid sponserId" });
                 } 
@@ -246,24 +246,22 @@ class UsersController extends Controller {
 
       /********************************************************
     Purpose: Logout
-    Method: Post
-    {
-        "token":""
-    }
+    Method: GET
     Return: JSON String
    ********************************************************/
     async logOut() {
         try {
-            const token = this.req.body.token;
+            const token = this.req.token;
+            console.log("token", token)
             if (!token) {
                 return this.res.send({ status: 0, message: "Please send the token"});
             }
-            const auth = await AccessTokens.findOne({ token: this.req.body.token, authId: this.req.user });
+            const auth = await AccessTokens.findOne({ token: token, authId: this.req.user });
             if (_.isEmpty(auth)) {
                 return this.res.send({ status: 0, message: "Invalid token"});
             }
            
-            const updateAuth = await AccessTokens.findByIdAndUpdate(auth._id, { token: "", action: 'Logout' }, { new: true });
+            const updateAuth = await AccessTokens.findByIdAndUpdate(auth._id, { token: "",refreshToken:"", action: 'Logout' }, { new: true });
             if (_.isEmpty(updateAuth)) {
                 return this.res.send({ status: 0, message: "Failed to logout" });
             }

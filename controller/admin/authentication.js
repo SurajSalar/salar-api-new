@@ -39,7 +39,7 @@ class AdminAuthController extends Controller {
                 }
 
                 const adminDetails = await Admin.findById({ _id: admin._id }).select({ password: 0, __v: 0, transactionPassword: 0 });
-                const { token, refreshToken } = await this.authentication.createToken({ id: admin._id, role: adminDetails.role });
+                const { token, refreshToken } = await this.authentication.createAdminToken({ id: admin._id, role: adminDetails.role,  ipAddress: this.req.ip, device: this.req.device.type, action: "Login" });
                 return this.res.send({ status: 1, message: "Login Successful", access_token: token, refresh_token: refreshToken, data: adminDetails });
             } else if (data.grant_type == "refresh_token") {
                 fieldsArray = ["refreshToken", "grant_type"];
@@ -47,7 +47,7 @@ class AdminAuthController extends Controller {
                 if (emptyFieldsRefresh && Array.isArray(emptyFieldsRefresh) && emptyFieldsRefresh.length) {
                     return this.res.send({ status: 0, message: "Please send" + " " + emptyFieldsRefresh.toString() + " fields required." });
                 }
-                const tokenStatus = await this.authentication.verfyRefreshToken(data);
+                const tokenStatus = await this.authentication.verifyAdminRefreshToken(data);
                 const adminDetails = await Admin.findById({ _id: tokenStatus.id }).select({ password: 0, __v: 0 });
                 const { token, refreshToken } = await this.authentication.createToken({ id: adminDetails._id, role: adminDetails.role });
                 return this.res.send({ status: 1, message: "Login Successful", access_token: token, refresh_token: refreshToken, data: adminDetails });

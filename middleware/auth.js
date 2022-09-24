@@ -15,6 +15,7 @@ class Authorization {
             }
             if (access_token) {
                 req.user = access_token.userId;
+                req.token = token;
                 next();
             } else {
                 return res.send({ status: 0, message: "Access denied. Token Expired." })

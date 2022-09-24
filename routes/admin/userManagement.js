@@ -37,4 +37,30 @@ module.exports = (router, app) => {
         return userObj.downloadLoginHistoryFiles();
     });
 
+    router.post('/kycUsersListing', Authorization.isAdminAuthorised, (req, res, next) => {
+        const userObj = (new UserManagementController()).boot(req, res);
+        return userObj.kycUsersListing();
+    });
+
+    router.get('/getKycUserDetails/:userId', Authorization.isAdminAuthorised, (req, res, next) => {
+        const userObj = (new UserManagementController()).boot(req, res);
+        return userObj.getKycUserDetails();
+    });
+
+    router.post('/downloadKycUserFiles', Authorization.isAdminAuthorised, (req, res, next) => {
+        const userObj = (new UserManagementController()).boot(req, res);
+        return userObj.downloadKycUserFiles();
+    });
+
+    router.post('/updateKycStatusByAdmin', Authorization.isAdminAuthorised, (req, res, next) => {
+        const userObj = (new UserManagementController()).boot(req, res);
+        return userObj.updateKycStatusByAdmin();
+    });
+
+    router.post('/updateOrgStatusByAdmin', Authorization.isAdminAuthorised, (req, res, next) => {
+        const userObj = (new UserManagementController()).boot(req, res);
+        return userObj.updateOrgStatusByAdmin();
+    });
+
+
 }

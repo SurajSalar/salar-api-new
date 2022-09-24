@@ -41,13 +41,13 @@ class BankDetailsController extends Controller {
         async addAndUpdateBankDetails() {
             try {
                 const currentUserId = this.req.user;
-                const user = await Users.findOne({_id: currentUserId},{country:1})
+                const user = await Users.findOne({_id: currentUserId},{countryId:1}).populate('countryId',{ name: 1, iso: 1, nickname: 1 })
                 if (_.isEmpty(user)) {
                     return this.res.send({ status: 0, message: "User not found"});
                 }
                 let data = this.req.body;
                 data.userId = currentUserId;
-                const fieldsArray = user.country == 'India'?
+                const fieldsArray = user.countryId.name == 'India'?
                     ["fullName","bankName","accountNumber","IFSCCode","panCard","nomineeName","nomineeRelation","nomineeMobileNo","nomineeEmailId"]: 
                     ["fullName","bankName","accountNumber","IBANNumber","swiftCode","nomineeName","nomineeRelation","nomineeMobileNo","nomineeEmailId"];
                 const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);

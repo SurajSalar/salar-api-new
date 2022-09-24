@@ -136,7 +136,7 @@ class SellersController extends Controller {
                 return this.res.send({ status: 0, message: "Invalid password" });
             }
             const sellerDetails = await Sellers.findById(seller._id).select({ password: 0, __v: 0, transactionPassword: 0 });
-            const { token } = await this.authentication.createToken({ id: seller._id, role: sellerDetails.role });
+            const { token } = await this.authentication.createToken({ id: seller._id, role: sellerDetails.role,  ipAddress: this.req.ip, device: this.req.device.type, action: "Login"});
             return this.res.send({ status: 1, message: "Login Successful", access_token: token, data: sellerDetails });
         } catch (error) {
             console.log(error);

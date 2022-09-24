@@ -45,6 +45,10 @@ class OrgDetailsController extends Controller {
                         await OrgDetails.findByIdAndUpdate(data.orgId, data, { new: true, upsert: true });
                         return this.res.send({ status: 1, message: "Organisation details updated successfully" });
                     }else{
+                        const getOrg = await OrgDetails.findOne({userId: currentUserId, isDeleted: false})
+                        if (!_.isEmpty(getOrg)) {
+                            return this.res.send({ status: 0, message: "Organisation details exists" })
+                        }
                         const newOrg = await new Model(OrgDetails).store(data);
                         if (_.isEmpty(newOrg)) {
                             return this.res.send({ status: 0, message: "Organisation details not saved" })
