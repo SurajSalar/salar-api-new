@@ -120,7 +120,7 @@ class UsersController extends Controller {
                     return this.res.send({ status: 0, message: "User not saved" })
                 }
                 else {
-                    const name = newUser.role == 'individual' ? newUser.fullName: newUser.organisationName
+                    const name = newUser.role == 'regular' ? newUser.fullName: newUser.organisationName
                     // Sending email
                     await this.services.sendEmail(newUser.emailId, "Salar", '',`<html><body><h2>HI! ${name} you have successfully registered with salar</h2><strong>RegisteredId</strong>: ${newUser.registerId} </br> <strong>Transaction password:</strong> ${transactionPassword}<h3></h3></body></html>`)
                     const message = `Dear ${name}, Welcome to www.salar.in Your User ID is ${newUser.registerId}, Your Password is ${transactionPassword}, Regards Strawberri World Solutions Private Limited.";`
@@ -188,18 +188,19 @@ class UsersController extends Controller {
             if(!data.userId){
                 return this.res.send({ status: 0, message: "Please send userId" });
             }
-            const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true }).populate('countryId',{name:1});
+            const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true }, {fullName:1, countryId:1, role:1, mobileNo:1, emailId:1, registerId:1}).populate('countryId',{name:1});
             if (_.isEmpty(user)) {
                 return this.res.send({ status: 0, message: "User not exists or deleted" });
             }
-           
-            const token = await this.authentication.generateToken();
-            await Users.findByIdAndUpdate(user._id, { forgotToken: token, forgotTokenCreationTime: new Date() });
+            console.log(`user: ${JSON.stringify(user)}`)
+            const newPassword = await this.commonService.randomGenerator(6);
+            const encryptedPassword = await this.commonService.ecryptPassword({ password: newPassword});
+            await Users.findByIdAndUpdate(user._id, { password: encryptedPassword }, {upsert: true});
 
-            const name = user.role == 'individual' ? user.fullName: user.organisationName
+            const name = user.role == 'regular' ? user.fullName: user.organisationName
             // Sending email
-            await this.services.sendEmail(user.emailId, "Salar", '',`<html><body><h2>HI! ${name} you have requested for a password change</h2><h3>Please click on the <a href="www.salar.in/forgotToken=${token}">link</a> to change your password</h3><strong>RegisteredId</strong>: ${user.registerId} </br> <strong>Transaction password:</strong> ${user.transactionPassword}<h3></h3></body></html>`)
-            const message = `Dear ${name}, Welcome to www.salar.in Your User ID is ${user.registerId}, Your Password is ${user.transactionPassword}, Regards Strawberri World Solutions Private Limited.";`
+            await this.services.sendEmail(user.emailId, "Salar", '',`<html><body><h2>HI! ${name} you have requested for a password change</h2><h3><strong>New password: </strong>${newPassword}</h3></body></html>`)
+            const message = `Dear ${name}, Welcome to www.salar.in Your User ID is ${user.registerId}, Your Password is ${newPassword}, Regards Strawberri World Solutions Private Limited.";`
             // Sending message
             if(user.countryId.name == 'India' && user.mobileNo){
                 await this.services.sendSignupConfirmation(user.mobileNo, message)
@@ -212,37 +213,37 @@ class UsersController extends Controller {
         }
     }
 
-      /********************************************************
-    Purpose: Reset password
-    Parameter:
-        {
-            "password":"123456",
-            "token": "errrrwqqqsssfdfvfgfdewwwww"
-        }
-    Return: JSON String
-   ********************************************************/
-    async resetPassword() {
-        try {
-            const user = await Users.findOne({ forgotToken: this.req.body.token });
-            if (_.isEmpty(user)) {
-                return this.res.send({ status: 0, message: "Invalid token"});
-            }
-            const validatePassword = await this.commonService.passwordValidation(this.req.body.password);
-            if(!validatePassword){
-                return this.res.send({ status: 0, message: "Max word limit - 15 (with Mix of Capital,Small Letters , One Numerical and One Special Character" });
-            }
-            let password = await this.commonService.ecryptPassword({ password: this.req.body.password });
+//       /********************************************************
+//     Purpose: Reset password
+//     Parameter:
+//         {
+//             "password":"123456",
+//             "token": "errrrwqqqsssfdfvfgfdewwwww"
+//         }
+//     Return: JSON String
+//    ********************************************************/
+//     async resetPassword() {
+//         try {
+//             const user = await Users.findOne({ forgotToken: this.req.body.token });
+//             if (_.isEmpty(user)) {
+//                 return this.res.send({ status: 0, message: "Invalid token"});
+//             }
+//             const validatePassword = await this.commonService.passwordValidation(this.req.body.password);
+//             if(!validatePassword){
+//                 return this.res.send({ status: 0, message: "Max word limit - 15 (with Mix of Capital,Small Letters , One Numerical and One Special Character" });
+//             }
+//             let password = await this.commonService.ecryptPassword({ password: this.req.body.password });
 
-            const updateUser = await Users.findByIdAndUpdate(user._id, { password: password }, { new: true });
-            if (_.isEmpty(updateUser)) {
-                return this.res.send({ status: 0, message: "Password not updated" });
-            }
-            return this.res.send({ status: 1, message: "Password updated successfully"});
-        } catch (error) {
-            console.log("error- ", error);
-            return this.res.send({ status: 0, message: "Internal server error" });
-        }
-    }
+//             const updateUser = await Users.findByIdAndUpdate(user._id, { password: password }, { new: true });
+//             if (_.isEmpty(updateUser)) {
+//                 return this.res.send({ status: 0, message: "Password not updated" });
+//             }
+//             return this.res.send({ status: 1, message: "Password updated successfully"});
+//         } catch (error) {
+//             console.log("error- ", error);
+//             return this.res.send({ status: 0, message: "Internal server error" });
+//         }
+//     }
 
       /********************************************************
     Purpose: Logout

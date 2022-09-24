@@ -17,10 +17,10 @@ module.exports = (router, app) => {
         return authObj.forgotPassword();
     });
 
-    router.post('/resetPassword', (req, res, next) => {
-        const authObj = (new UsersController()).boot(req, res);
-        return authObj.resetPassword();
-    });
+    // router.post('/resetPassword', (req, res, next) => {
+    //     const authObj = (new UsersController()).boot(req, res);
+    //     return authObj.resetPassword();
+    // });
 
     router.get('/logOut', Authorization.isAuthorised,(req, res, next) => {
         const authObj = (new UsersController()).boot(req, res);

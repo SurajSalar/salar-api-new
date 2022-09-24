@@ -47,9 +47,9 @@ class BankDetailsController extends Controller {
                 }
                 let data = this.req.body;
                 data.userId = currentUserId;
-                const fieldsArray = user.countryId.name == 'India'?
-                    ["fullName","bankName","accountNumber","IFSCCode","panCard","nomineeName","nomineeRelation","nomineeMobileNo","nomineeEmailId"]: 
-                    ["fullName","bankName","accountNumber","IBANNumber","swiftCode","nomineeName","nomineeRelation","nomineeMobileNo","nomineeEmailId"];
+                const fields = user.countryId.name == 'India'? ["IFSCCode","panCard"] : ["IBANNumber","swiftCode",]
+                const fieldsArray = user.role == 'regular'? ["fullName","bankName","accountNumber","nomineeName","nomineeRelation","nomineeMobileNo","nomineeEmailId", ...fields]: 
+                    ["fullName","bankName","accountNumber", ...fields];
                 const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
                 if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                     return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });

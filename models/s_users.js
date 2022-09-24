@@ -32,8 +32,6 @@ const UserSchema = new schema({
     termsAndConditions: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     status: { type: Boolean, default: true },
-    forgotToken: { type: String },
-    forgotTokenCreationTime: { type: Date },
     role: { type: String , enum: ['regular', 'organisation']},
     shippingAddresses: [address],
 }, {
