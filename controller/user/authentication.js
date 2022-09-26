@@ -144,30 +144,51 @@ class UsersController extends Controller {
         {
             "userId":"emailId" or registerId
             "password":"123456"
+            "grantType":"password"
         }
+        or 
+        {
+            "refreshToken":"e857905a237905b28b014269d0628136eb600c7b60ff07f00557d1f6d443b0854627b1954d2a6ec75bc10f5f1e86960ef6f94090a7e0867348013d9b078a1dc2",
+            "grantType": "refreshToken"
+        }     
     Return: JSON String
    ********************************************************/
     async signIn() {
         try {
-            const fieldsArray = ["userId", "password"];
             const data = this.req.body;
-            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
-            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
-                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
-            }
-            const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true });
-            if (_.isEmpty(user)) {
-                return this.res.send({ status: 0, message: "User not exists or deleted" });
-            }
-           
-            const status = await this.commonService.verifyPassword({ password: data.password, savedPassword: user.password });
-            if (!status) {
-                return this.res.send({ status: 0, message: "Invalid password" });
-            }
+            if (data.grantType == "password") {
+                const fieldsArray = ["userId", "password"];
+                const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+                if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                    return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+                }
+                const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true });
+                if (_.isEmpty(user)) {
+                    return this.res.send({ status: 0, message: "User not exists or deleted" });
+                }
+            
+                const status = await this.commonService.verifyPassword({ password: data.password, savedPassword: user.password });
+                if (!status) {
+                    return this.res.send({ status: 0, message: "Invalid password" });
+                }
 
-            const userDetails = await Users.findById({_id:user._id}).select({password:0, __v:0, transactionPassword:0});
-            const { token } = await this.authentication.createToken({ id: user._id, role: userDetails.role, ipAddress: this.req.ip, device: this.req.device.type, action: "Login" });
-            return this.res.send({ status: 1, message: "Login Successful", access_token: token, data: userDetails });
+                const userDetails = await Users.findById({_id:user._id}).select({password:0, __v:0, transactionPassword:0});
+                const { token, refreshToken } = await this.authentication.createToken({ id: user._id, role: userDetails.role, ipAddress: this.req.ip, device: this.req.device.type, action: "Login" });
+                return this.res.send({ status: 1, message: "Login Successful", access_token: token, refresh_token: refreshToken, data: userDetails });
+            }
+            else if (data.grantType == "refreshToken") {
+                const fieldsArray = ["refreshToken", "grantType"];
+                const emptyFieldsRefresh = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+                if (emptyFieldsRefresh && Array.isArray(emptyFieldsRefresh) && emptyFieldsRefresh.length) {
+                    return this.res.send({ status: 0, message: "Please send" + " " + emptyFieldsRefresh.toString() + " fields required." });
+                }
+                const tokenStatus = await this.authentication.verifyRefreshToken(data);
+                const userDetails = await Users.findById({ _id: tokenStatus.id }).select({ password: 0, __v: 0 });
+                const { token, refreshToken } = await this.authentication.createToken({ id: userDetails._id, role: userDetails.role });
+                return this.res.send({ status: 1, message: "Login Successful", access_token: token, refresh_token: refreshToken, data: userDetails });
+            } else {
+                return this.res.send({ status: 0, message: "Please send grantType fields required." });
+            }
         } catch (error) {
             console.log(error);
             return this.res.send({ status: 0, message: "Internal server error" });
@@ -188,11 +209,10 @@ class UsersController extends Controller {
             if(!data.userId){
                 return this.res.send({ status: 0, message: "Please send userId" });
             }
-            const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true }, {fullName:1, countryId:1, role:1, mobileNo:1, emailId:1, registerId:1}).populate('countryId',{name:1});
+            const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true }, {fullName:1,organisationName:1, countryId:1, role:1, mobileNo:1, emailId:1, registerId:1}).populate('countryId',{name:1});
             if (_.isEmpty(user)) {
                 return this.res.send({ status: 0, message: "User not exists or deleted" });
             }
-            console.log(`user: ${JSON.stringify(user)}`)
             const newPassword = await this.commonService.randomGenerator(6);
             const encryptedPassword = await this.commonService.ecryptPassword({ password: newPassword});
             await Users.findByIdAndUpdate(user._id, { password: encryptedPassword }, {upsert: true});
@@ -257,7 +277,7 @@ class UsersController extends Controller {
             if (!token) {
                 return this.res.send({ status: 0, message: "Please send the token"});
             }
-            const auth = await AccessTokens.findOne({ token: token, authId: this.req.user });
+            const auth = await AccessTokens.findOne({ token: token, userId: this.req.user });
             if (_.isEmpty(auth)) {
                 return this.res.send({ status: 0, message: "Invalid token"});
             }

@@ -5,7 +5,7 @@ const Controller = require("../base");
 const { Users } = require('../../models/s_users');
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
-const DownloadsController = require('../common/downloads')
+const DownloadsController = require('../common/downloads');
 const { AccessTokens } = require("../../models/s_auth");
 const { Tickets } = require("../../models/s_ticket");
 const { KycDetails } = require("../../models/s_kyc");
@@ -351,7 +351,7 @@ const kycUsersListingStages = [
      { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
      {$project: {
-         _id:1, createdAt:1, role:1,registerId:1, fullName:1,
+         _id:1, createdAt:1, role:1,registerId:1, fullName:1, status:1,
          kycDetails:"$kycdetails", country:1, bankDetails: "$bankdetails"
          }}
  ]
@@ -462,8 +462,13 @@ class UserManagementController extends Controller {
     {
         "page":1,
         "pagesize":3,
-        "startDate":"",
-        "endDate":"",
+        "startDate":"2022-09-20",
+        "endDate":"2022-09-25",
+        "filter": {
+            "status": true,
+            "kycDetails.status": "Approved",
+            "country.name":"India"
+        }
     }
     Return: JSON String
     ********************************************************/
@@ -478,9 +483,11 @@ class UserManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
+            const filterQuery = data.filter ? data.filter: {}
             const result = await Users.aggregate([
                 {$match: { isDeleted: false, $and: query}},
                 ...usersListingStages,
+                {$match: filterQuery},
                 {$sort: sort},
                 {$skip: skip},
                 {$limit: limit},
@@ -488,6 +495,8 @@ class UserManagementController extends Controller {
             const total = await Users.aggregate([
                 {$match: { isDeleted: false, $and: query}},
                 ...usersListingStages,
+                {$match: filterQuery},
+                {$project: {_id:1}}
             ])
             return this.res.send({status:1, message: "Listing details are: ", data: result,page: data.page, pagesize: data.pagesize, total: total.length});
         } catch (error) {
@@ -659,6 +668,7 @@ class UserManagementController extends Controller {
             return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
+
     /********************************************************
        Purpose: Download csv and excel files
        Method: Post
@@ -709,8 +719,13 @@ class UserManagementController extends Controller {
     {
         "page":1,
         "pagesize":3,
-        "startDate":"",
-        "endDate":"",
+        "startDate":"2022-09-20",
+        "endDate":"2022-09-25",
+        "filter": {
+            "status": true,
+            "kycDetails.status": "Approved",
+            "country.name":"India"
+        }
     }
     Return: JSON String
     ********************************************************/
@@ -725,9 +740,11 @@ class UserManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
+            const filterQuery = data.filter ? data.filter: {}
             const result = await Users.aggregate([
                 {$match: { isDeleted: false, $and: query}},
                 ...kycUsersListingStages,
+                {$match: filterQuery},
                 {$sort: sort},
                 {$skip: skip},
                 {$limit: limit},
@@ -735,6 +752,8 @@ class UserManagementController extends Controller {
             const total = await Users.aggregate([
                 {$match: { isDeleted: false, $and: query}},
                 ...kycUsersListingStages,
+                {$match: filterQuery},
+                {$project:{_id:1}}
             ])
             return this.res.send({status:1, message: "Listing details are: ", data: result,page: data.page, pagesize: data.pagesize, total: total.length});
         } catch (error) {

@@ -7,6 +7,7 @@ const { Messages } = require('../../models/s_message');
 const Model = require("../../utilities/model");
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
+const { TicketCategories } = require('../../models/s_ticket_categories');
 
 
 class SupportTicketsController extends Controller {
@@ -24,6 +25,7 @@ class SupportTicketsController extends Controller {
    Parameter:
       {
           "message": "Support Ticket",
+          "subjectId":"",
           "role": "user",
           "userId": "",
       }
@@ -35,7 +37,7 @@ class SupportTicketsController extends Controller {
             if (!data.role) {
                 return this.res.send({ status: 0, message: "Please send role" });
             }
-            const fieldsArray = data.role == 'user' ? ["userId", "message"] : ["adminId", "message"];
+            const fieldsArray = data.role == 'user' ? ["userId", "message", "subjectId"] : (data.role == 'admin'? ["adminId", "message", "subjectId"]: ["sellerId", "message", "subjectId"]);
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
@@ -72,7 +74,7 @@ class SupportTicketsController extends Controller {
             if (!data.role) {
                 return this.res.send({ status: 0, message: "Please send role" });
             }
-            const fieldsArray = data.role == 'user' ? ["userId", "message", "ticketId"] : ["adminId", "message", "ticketId"];
+            const fieldsArray = data.role == 'user' ? ["userId", "message"] : (data.role == 'admin'? ["adminId", "message"]: ["sellerId", "message"]);
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
@@ -121,110 +123,13 @@ class SupportTicketsController extends Controller {
                 return this.res.send({ status: 0, message: "Please send ticketId" });
             }
             const sort = { _id: 1 }
-            const result = await Messages.find({ isDeleted: false, ticketId: ObjectID(this.req.body.ticketId) }).populate('userId', { fullName: 1 }).populate('adminId', { fullName: 1 }).sort(sort);
+            const result = await Messages.find({ isDeleted: false, ticketId: ObjectID(this.req.body.ticketId) }).populate('userId', { fullName: 1 }).populate('adminId', { fullName: 1 }).populate('sellerId', { fullName: 1 }).sort(sort);
             return this.res.send({ status: 1, message: "Listing details are: ", data: result });
         } catch (error) {
             console.log("error- ", error);
             return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
-    /********************************************************
-   Purpose: Create Support Ticket
-   Method: Post
-   Authorisation: true
-   Parameter:
-      {
-          "message": "Support Ticket",
-          "role": "user/seller/admin",
-          "userId": "",
-      }
-   Return: JSON String
-   ********************************************************/
-    async createSupportTicket() {
-        try {
-            let data = this.req.body;
-            if (!data.role) {
-                return this.res.send({ status: 0, message: "Please send role" });
-            }
-            const fieldsArray = data.role == 'user' ? ["userId", "message"] : data.role == 'seller' ? ["sellerId", "message"] : ["adminId", "message"];
-            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
-            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
-                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
-            }
-
-            const newTicket = await new Model(Tickets).store(data);
-            if (_.isEmpty(newTicket)) {
-                return this.res.send({ status: 0, message: "Details not saved" });
-            }
-            return this.res.send({ status: 1, message: "Ticket created successfully", data: newTicket });
-        } catch (error) {
-            console.log("error- ", error);
-            return this.res.send({ status: 0, message: "Internal server error" });
-        }
-    }
-
-
-    /********************************************************
-  Purpose: Get Message Details
-  Method: GET
-  Authorisation: true
-  Return: JSON String
-  ********************************************************/
-
-    /********************************************************
-    Purpose: Send Message In Support Ticket
-    Method: Post
-    Authorisation: true
-    Parameter:
-       {
-           "message": "Support Ticket",
-           "role": "user",
-           "userId": "",
-           "ticketId": "",
-           "messageId"
-       }
-    Return: JSON String
-    ********************************************************/
-    async sendAndUpdateMessage() {
-        try {
-            let data = this.req.body;
-            if (!data.role) {
-                return this.res.send({ status: 0, message: "Please send role" });
-            }
-            const fieldsArray = data.role == 'user' ? ["userId", "message", "ticketId"] : data.role == 'seller' ? ["sellerId", "message", "ticketId"] : ["adminId", "message", "ticketId"];
-            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
-            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
-                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
-            }
-            const ticket = await Tickets.findOne({ _id: data.ticketId, isDeleted: false });
-            if (_.isEmpty(ticket)) {
-                return this.res.send({ status: 0, message: "Ticket details not found" });
-            }
-            if (data.messageId) {
-                const message = await Messages.findOne({ _id: data.messageId, isDeleted: false });
-                if (_.isEmpty(message)) {
-                    return this.res.send({ status: 0, message: "Message details not found" });
-                }
-                if (message.role != data.role) {
-                    return this.res.send({ status: 0, message: "You don't have access to update this message" });
-                }
-                await Messages.findByIdAndUpdate(data.messageId, data, { new: true, upsert: true });
-                return this.res.send({ status: 1, message: "Message details updated successfully" });
-            } else {
-                const newMessage = await new Model(Messages).store(data);
-                if (_.isEmpty(newMessage)) {
-                    return this.res.send({ status: 0, message: "Details not saved" });
-                }
-                return this.res.send({ status: 1, message: "Message added successfully", data: newMessage });
-            }
-
-        } catch (error) {
-            console.log("error- ", error);
-            return this.res.send({ status: 0, message: "Internal server error" });
-        }
-    }
-
-
 
     /********************************************************
   Purpose: Get Message Details
@@ -237,8 +142,7 @@ class SupportTicketsController extends Controller {
             if (!this.req.params.messageId) {
                 return this.res.send({ status: 0, message: "Please send proper params" });
             }
-            const message = await Messages.findOne({ _id: this.req.params.messageId, isDeleted: false }, { __v: 0 }).populate('userId', { fullName: 1 }).populate('adminId', { fullName: 1 });
-
+            const message = await Messages.findOne({ _id: this.req.params.messageId, isDeleted: false }, { __v: 0 }).populate('userId', { fullName: 1 }).populate('adminId', { fullName: 1 }).populate('sellerId', { fullName: 1 });
             if (_.isEmpty(message))
                 return this.res.send({ status: 0, message: "Message not found" });
             return this.res.send({ status: 1, message: "Details are: ", data: message });
@@ -261,8 +165,6 @@ class SupportTicketsController extends Controller {
        }
        Return: JSON String
        ********************************************************/
-
-
     async deleteMessage() {
         try {
             let data = this.req.body;
@@ -277,7 +179,7 @@ class SupportTicketsController extends Controller {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
             }
 
-            const query = data.role == 'user' ? { userId: ObjectID(data.userId) } : { adminId: ObjectID(data.adminId) };
+            const query = data.role == 'user' ? { userId: ObjectID(data.userId) } : (data.role == 'admin' ?{ adminId: ObjectID(data.adminId) } : { sellerId: ObjectID(data.sellerId)});
             const message = await Messages.findOne({ _id: data.messageId, ...query, isDeleted: false });
             if (_.isEmpty(message)) {
                 return this.res.send({ status: 0, message: "Message details not found" });
@@ -291,6 +193,49 @@ class SupportTicketsController extends Controller {
             }
             return this.res.send({ status: 1, message: msg });
 
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+      /********************************************************
+   Purpose:Getting Dropdowns For Filters In ticketCategories In Admin
+   Method: Post
+   Authorisation: true
+   Parameter:
+   {
+        "searchText":""
+   }
+   Return: JSON String
+   ********************************************************/
+   async getTicketCategoriesList() {
+    try {
+        let andArray = [{ isDeleted: false, status: true }]
+        if (this.req.body.searchText) {
+            let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+            andArray.push({ $or: [{ subject: regex }] })
+        }
+        let result = await TicketCategories.find({ $and: andArray }, { subject: 1 }).limit(20)
+        return this.res.send({ status: 1, message: "Ticket Categories details are:", data: result });
+    } catch (error) {
+        console.log("error", error)
+        return _this.res.send({ status: 0, message: "Internal Server Error" });
+    }
+}
+
+     /********************************************************
+     Purpose: Get details of support ticket
+     Method: Get
+     Return: JSON String
+     ********************************************************/
+     async getDetailsOfSupportTicket() {
+        try {
+            if (!this.req.params.ticketId) {
+                return this.res.send({ status: 0, message: "Please send ticketId" });
+            }
+            const result = await Tickets.findOne({ _id: ObjectID(this.req.params.ticketId), isDeleted:false}).populate('userId', { fullName: 1 }).populate('adminId', { fullName: 1 }).populate('sellerId', { fullName: 1 }).populate('subjectId', { subject: 1 });
+            return this.res.send({ status: 1, message: "Listing details are: ", data: result });
         } catch (error) {
             console.log("error- ", error);
             return this.res.send({ status: 0, message: "Internal server error" });

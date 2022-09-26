@@ -7,6 +7,7 @@
  const accessTokenSchema = new Schema({
      userId: { type: Schema.Types.ObjectId, ref: 'Users' },
      adminId: { type: Schema.Types.ObjectId, ref: 'Admin' },
+     sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
      token: { type: String },
      refreshToken: { type: String },
      action: { type: String, enum:["Login", "Logout", "Relogged"] },

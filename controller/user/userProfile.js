@@ -10,6 +10,7 @@ const { Users } = require('../../models/s_users');
 const { Country } = require('../../models/s_country');
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
+const Services = require('../../utilities/index');
 
 
 class UserProfileController extends Controller {
@@ -17,6 +18,8 @@ class UserProfileController extends Controller {
         super();
         this.commonService = new CommonService();
         this.requestBody = new RequestBody();
+        this.services = new Services();
+
     }
 
      /********************************************************
@@ -31,13 +34,20 @@ class UserProfileController extends Controller {
     async changePassword() {
         try {
             const user = this.req.user;
-            const userDetails = await Users.findOne({_id:user},{password:1})
+            const data = this.req.body; 
+            const fieldsArray = ["oldPassword", "newPassword", "transactionPassword"];
+            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+            }
+
+            const userDetails = await Users.findOne({_id:user, transactionPassword:data.transactionPassword },{password:1})
             if (_.isEmpty(userDetails)) {
                 return this.res.send({ status: 0, message: "User not found" });
             }
             const passwordObj = {
-                oldPassword: this.req.body.oldPassword,
-                newPassword: this.req.body.newPassword,
+                oldPassword: data.oldPassword,
+                newPassword: data.newPassword,
                 savedPassword: userDetails.password
             };
             const password = await this.commonService.changePasswordValidation({ passwordObj });
@@ -48,6 +58,49 @@ class UserProfileController extends Controller {
             const updatedUser = await Users.findByIdAndUpdate(user._id, { password: password}, { new: true });
             return !updatedUser ? this.res.send({ status: 0, message: "Password not updated" }) : this.res.send({ status: 1, message: "Password updated successfully" });
 
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+     /********************************************************
+    Purpose: Change Transaction Password request
+    Parameter:
+        {
+            "emailId":"transactonPassword",
+            "mobileNo":"newTransactionpassword"
+        }
+    Return: JSON String
+   ********************************************************/
+    async changeTransactionPasswordRequest() {
+        try {
+            const user = this.req.user;
+            const data = this.req.body; 
+            const fieldsArray = ["emailId", "mobileNo"];
+            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+            }
+            const userDetails = await Users.findOne({ _id:user, emailId: data.emailId, mobileNo: data.mobileNo},{fullName:1,organisationName:1, countryId:1, role:1, mobileNo:1, emailId:1, registerId:1}).populate('countryId',{name:1});
+            if (_.isEmpty(userDetails)) {
+                return this.res.send({ status: 0, message: "User not found" });
+            }
+            const otp =  await this.commonService.randomGenerator(4,'number');
+            const updatedOtp = await Users.findOneAndUpdate({_id: userDetails._id},{otp:otp}, {new:true, upsert:true})
+            if (_.isEmpty(updatedOtp)) {
+                return this.res.send({ status: 0, message: "OTP details not updated" });
+            }
+            const name = userDetails.role == 'regular' ? userDetails.fullName: userDetails.organisationName
+            // Sending email
+            await this.services.sendEmail(userDetails.emailId, "Salar", '',`<html><body><h2>HI! ${name} </br> You have requested for a transaction password change otp for the</h2><strong>RegisteredId</strong>: ${userDetails.registerId} </br> <strong>OTP:</strong> ${otp}<h3></h3></body></html>`)
+            const message = `Dear ${name}, Welcome to www.salar.in Your User ID is ${userDetails.registerId}, Your otp is ${otp}, Regards Strawberri World Solutions Private Limited.";`
+            // Sending message
+            if(userDetails.countryId.name == 'India' && userDetails.mobileNo){
+                await this.services.sendSignupConfirmation(userDetails.mobileNo, message)
+            }
+            return this.res.send({ status: 1, message: "OTP sent successfully"});
+      
         } catch (error) {
             console.log("error- ", error);
             return this.res.send({ status: 0, message: "Internal server error" });
@@ -66,13 +119,23 @@ class UserProfileController extends Controller {
     async changeTransactionPassword() {
         try {
             const user = this.req.user;
-            const userDetails = await Users.findOne({_id:user},{transactionPassword:1})
+            const data = this.req.body; 
+            const fieldsArray = ["otp", "oldTransactionPassword", "newTransactionPassword"];
+            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+            }
+            const userDetails = await Users.findOne({_id:user},{transactionPassword:1, otp:1})
+            console.log(`userDetails: ${JSON.stringify(userDetails)}`)
             if (_.isEmpty(userDetails)) {
                 return this.res.send({ status: 0, message: "User not found" });
             }
+            if(data.otp != userDetails.otp){
+                return this.res.send({ status: 0, message: "Please enter valid OTP" });
+            }
             const passwordObj = {
-                oldTransactionPassword: this.req.body.oldTransactionPassword,
-                newTransactionPassword: this.req.body.newTransactionPassword,
+                oldTransactionPassword: data.oldTransactionPassword,
+                newTransactionPassword: data.newTransactionPassword,
                 savedTransactionPassword: userDetails.transactionPassword
             };
             const transactionPassword = await this.commonService.changeTransactionPasswordValidation({ passwordObj });
@@ -90,7 +153,7 @@ class UserProfileController extends Controller {
     }
 
       /********************************************************
-    Purpose: Get User Profilel
+    Purpose: Get User Profile
     Method: Get
     Authorisation: true            
     Return: JSON String
@@ -125,7 +188,8 @@ class UserProfileController extends Controller {
       "emailId":"lakshmimattafreelancer@gmail.com",
       "countryId":"",
       "mobileNo":"7207334583",
-      "image":""
+      "image":"",
+      "transactionPassword":""
     }               
     Return: JSON String
     ********************************************************/
@@ -133,7 +197,10 @@ class UserProfileController extends Controller {
         try {
             const currentUserId = this.req.user;
             const data = this.req.body;
-            delete data.emailId
+            delete data.emailId;
+            if (!data.transactionPassword) {
+                return this.res.send({ status: 0, message: "Please send transaction password" });
+            }
             if(data.countryId){
                 const validateCountry = await Country.findOne({_id: this.req.body.countryId, status: 1});
                 if (_.isEmpty(validateCountry)) {
@@ -158,7 +225,10 @@ class UserProfileController extends Controller {
                 }
             }
             
-            await Users.findByIdAndUpdate(currentUserId, data, { new: true });
+            const updatedUser = await Users.findOneAndUpdate({_id:currentUserId, transactionPassword: data.transactionPassword}, data, { new: true });
+            if (_.isEmpty(updatedUser)) {
+                return this.res.send({ status: 0, message: "User details are not updated" })
+            }
             return this.res.send({ status: 1, message: "User details updated successfully"});
         } catch (error) {
             console.log("error", error)

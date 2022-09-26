@@ -17,10 +17,11 @@ const address = new schema({
 const SellerSchema = new schema({
     fullName: { type: String },
     dob: { type: String  },
+    image: { type: String  },
     gender:  { type: String, enum : ['male','female']},
     age: {type: String },
     emailId: { type: String, required: true },
-    country: { type: String },
+    countryId: { type: schema.Types.ObjectId, ref: 'Country' },
     mobileNo: { type: String },
     password: { type: String },
     transactionPassword: { type: String },
@@ -31,9 +32,7 @@ const SellerSchema = new schema({
     termsAndConditions: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     status: { type: Boolean, default: true },
-    forgotToken: { type: String },
-    forgotTokenCreationTime: { type: Date },
-    // role: { type: String , enum: ['individual', 'organisation']},
+    role: { type: String , enum: ['seller'], default: "seller"},
     shippingAddresses: [address],
 }, {
     timestamps: true

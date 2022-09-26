@@ -29,6 +29,7 @@ const UserSchema = new schema({
     registerId: { type: String },
     organisationName: { type: String },
     registerYear: { type: String },
+    otp: { type: String },
     termsAndConditions: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     status: { type: Boolean, default: true },

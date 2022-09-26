@@ -86,7 +86,7 @@ class UserProfileController extends Controller {
     }
 
       /********************************************************
-    Purpose: Get User Profilel
+    Purpose: Get User Profile
     Method: Get
     Authorisation: true            
     Return: JSON String
@@ -114,13 +114,13 @@ class UserProfileController extends Controller {
     Authorisation: true
     Parameter:
     {
-   	  "fullName":"Ramakurty Lakshmi",
-      "dob":"29-09-1996",
-      "gender":"female",
-      "age":"25",
-      "emailId":"lakshmimattafreelancer@gmail.com",
-      "country":"India",
-      "mobileNo":"7207334583"
+        "fullName":"Ramakurty Lakshmi",
+        "dob":"29-09-1996",
+        "gender":"female",
+        "age":"25",
+        "emailId":"lakshmimattafreelancer@gmail.com",
+        "countryId":"630f516684310d4d2a98baf2",
+        "mobileNo":"7207334583"
     }               
     Return: JSON String
     ********************************************************/
@@ -133,6 +133,12 @@ class UserProfileController extends Controller {
                 const validateName = await this.commonService.nameValidation(data.fullName);
                 if(!validateName){
                     return this.res.send({ status: 0, message: "Please send proper fullName" });
+                }
+            }
+            if(data.countryId){
+                const validateCountry = await Country.findOne({_id: data.countryId, status: 1});
+                if (_.isEmpty(validateCountry)) {
+                    return this.res.send({ status: 0, message: "Country details not found" })
                 }
             }
             if(data.mobileNo){

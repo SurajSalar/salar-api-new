@@ -3,6 +3,7 @@ const { ObjectID } = require('mongodb');
 
 const Controller = require("../base");
 const { KycDetails } = require('../../models/s_kyc');
+const { Users } = require('../../models/s_users');
 const Model = require("../../utilities/model");
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
@@ -26,7 +27,8 @@ class KycDetailsController extends Controller {
             "numberProof": "12345678901",
             "frontImage": "aadhar.png",
             "backImage": "aadhar.png",
-            "kycId":""
+            "kycId":"",
+            "transactionPassword":""
         }               
         Return: JSON String
     ********************************************************/
@@ -35,10 +37,14 @@ class KycDetailsController extends Controller {
                     const currentUserId = this.req.user;
                     let data = this.req.body;
                     data.userId = currentUserId;
-                    const fieldsArray = ["selectId", "numberProof","frontImage","backImage"];
+                    const fieldsArray = ["selectId", "numberProof","frontImage","backImage", "transactionPassword"];
                     const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
                     if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                         return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+                    }
+                    const user = await Users.findOne({_id: this.req.user, transactionPassword: data.transactionPassword},{_id:1})
+                    if (_.isEmpty(user)) {
+                        return this.res.send({ status: 0, message: "User not found"});
                     }
                     if(data.selectId == 'Driving License'){
                         const validateDL = await this.commonService.drivingLicenseValidation(data.numberProof);
@@ -121,15 +127,20 @@ class KycDetailsController extends Controller {
     Authorisation: true
     Parameter:
     {
-        "kycId":"5c9df24382ddca1298d855bb"
+        "kycId":"5c9df24382ddca1298d855bb",
+        "transactionPassword":""
     }  
     Return: JSON String
     ********************************************************/
     async deleteKycDetails() {
         try {
             const data = this.req.body;
-            if (!data.kycId) {
-                return this.res.send({ status: 0, message: "Please send kycId" });
+            if (!data.kycId || !data.transactionPassword) {
+                return this.res.send({ status: 0, message: "Please send kycId and transactionPassword" });
+            }
+            const user = await Users.findOne({_id: this.req.user, transactionPassword: data.transactionPassword},{_id:1})
+            if (_.isEmpty(user)) {
+                return this.res.send({ status: 0, message: "User not found"});
             }
             await KycDetails.findByIdAndUpdate({ _id: ObjectID(data.kycId) },{isDeleted: true}, {new:true, upsert:true})
             return this.res.send({ status: 1, message: "Kyc details deleted successfully" });

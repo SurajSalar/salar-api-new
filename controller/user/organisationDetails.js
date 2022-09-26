@@ -3,6 +3,7 @@ const { ObjectID } = require('mongodb');
 
 const Controller = require("../base");
 const { OrgDetails } = require('../../models/s_organisation');
+const { Users } = require('../../models/s_users');
 const Model = require("../../utilities/model");
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
@@ -27,7 +28,8 @@ class OrgDetailsController extends Controller {
             "organisationCertificateNumber": "ASDFERWSDSDFSRWES",
             "orgFrontImage": "aadhar.png",
             "orgBackImage": "aadhar.png",
-            "orgId":""
+            "orgId":"",
+            "transactionPassword":""
         }               
         Return: JSON String
     ********************************************************/
@@ -36,10 +38,14 @@ class OrgDetailsController extends Controller {
                     const currentUserId = this.req.user;
                     let data = this.req.body;
                     data.userId = currentUserId;
-                    const fieldsArray = ["orgFrontImage", "orgBackImage","organisationName","roleInOrganisation","organisationCertificateNumber"];
+                    const fieldsArray = ["orgFrontImage", "orgBackImage","organisationName","roleInOrganisation","organisationCertificateNumber","transactionPassword"];
                     const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
                     if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                         return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+                    }
+                    const user = await Users.findOne({_id: this.req.user, transactionPassword: data.transactionPassword},{_id:1})
+                    if (_.isEmpty(user)) {
+                        return this.res.send({ status: 0, message: "User not found"});
                     }
                     if(data.orgId){
                         await OrgDetails.findByIdAndUpdate(data.orgId, data, { new: true, upsert: true });
@@ -91,15 +97,20 @@ class OrgDetailsController extends Controller {
     Authorisation: true
     Parameter:
     {
-        "orgId":"5c9df24382ddca1298d855bb"
+        "orgId":"5c9df24382ddca1298d855bb",
+        "transactionPassword":""
     }  
     Return: JSON String
     ********************************************************/
     async deleteOrgDetails() {
         try {
             const data = this.req.body;
-            if (!data.orgId) {
-                return this.res.send({ status: 0, message: "Please send orgId" });
+            if (!data.orgId || !data.transactionPassword) {
+                return this.res.send({ status: 0, message: "Please send orgId and transactionPassword" });
+            }
+            const user = await Users.findOne({_id: this.req.user, transactionPassword: data.transactionPassword},{_id:1})
+            if (_.isEmpty(user)) {
+                return this.res.send({ status: 0, message: "User not found"});
             }
             await OrgDetails.findByIdAndUpdate({ _id: ObjectID(data.orgId) },{isDeleted: true}, {new:true, upsert:true})
             return this.res.send({ status: 1, message: "Organisation details deleted successfully" });
