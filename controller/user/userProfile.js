@@ -19,16 +19,16 @@ class UserProfileController extends Controller {
         this.commonService = new CommonService();
         this.requestBody = new RequestBody();
         this.services = new Services();
-
     }
 
      /********************************************************
     Purpose: Change Password
     Parameter:
-        {
-            "oldPassword":"password",
-            "newPassword":"newpassword"
-        }
+    {
+        "oldPassword":"Satya@123",
+        "newPassword":"Test@123",
+        "transactionPassword":"bCkQJl"
+    }
     Return: JSON String
    ********************************************************/
     async changePassword() {
@@ -55,7 +55,7 @@ class UserProfileController extends Controller {
                 return this.res.send(password);
             }
 
-            const updatedUser = await Users.findByIdAndUpdate(user._id, { password: password}, { new: true });
+            const updatedUser = await Users.findByIdAndUpdate(user, { password: password}, { new: true });
             return !updatedUser ? this.res.send({ status: 0, message: "Password not updated" }) : this.res.send({ status: 1, message: "Password updated successfully" });
 
         } catch (error) {
@@ -67,10 +67,10 @@ class UserProfileController extends Controller {
      /********************************************************
     Purpose: Change Transaction Password request
     Parameter:
-        {
-            "emailId":"transactonPassword",
-            "mobileNo":"newTransactionpassword"
-        }
+    {
+        "emailId":"lakshmimattafreelancer@gmail.com",
+        "mobileNo":"7207334583"
+    }
     Return: JSON String
    ********************************************************/
     async changeTransactionPasswordRequest() {
@@ -110,40 +110,29 @@ class UserProfileController extends Controller {
      /********************************************************
     Purpose: Change Transaction Password
     Parameter:
-        {
-            "oldTransactionPassword":"transactonPassword",
-            "newTransactionPassword":"newTransactionpassword"
-        }
+    {
+        "newTransactionPassword":"Test@123",
+        "otp":"1231"
+    }
     Return: JSON String
    ********************************************************/
     async changeTransactionPassword() {
         try {
             const user = this.req.user;
             const data = this.req.body; 
-            const fieldsArray = ["otp", "oldTransactionPassword", "newTransactionPassword"];
+            const fieldsArray = ["otp", "newTransactionPassword"];
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
             }
             const userDetails = await Users.findOne({_id:user},{transactionPassword:1, otp:1})
-            console.log(`userDetails: ${JSON.stringify(userDetails)}`)
             if (_.isEmpty(userDetails)) {
                 return this.res.send({ status: 0, message: "User not found" });
             }
-            if(data.otp != userDetails.otp){
+            if(data.otp != userDetails.otp || data.otp == ""){
                 return this.res.send({ status: 0, message: "Please enter valid OTP" });
             }
-            const passwordObj = {
-                oldTransactionPassword: data.oldTransactionPassword,
-                newTransactionPassword: data.newTransactionPassword,
-                savedTransactionPassword: userDetails.transactionPassword
-            };
-            const transactionPassword = await this.commonService.changeTransactionPasswordValidation({ passwordObj });
-            if (typeof transactionPassword.status !== 'undefined' && transactionPassword.status == 0) {
-                return this.res.send(transactionPassword);
-            }
-
-            const updatedUser = await Users.findByIdAndUpdate(user._id, { transactionPassword: transactionPassword}, { new: true });
+            const updatedUser = await Users.findByIdAndUpdate(user, { transactionPassword: data.newTransactionPassword, otp: ""}, { new: true });
             return !updatedUser ? this.res.send({ status: 0, message: "Transaction password not updated" }) : this.res.send({ status: 1, message: "Transaction password updated successfully" });
 
         } catch (error) {

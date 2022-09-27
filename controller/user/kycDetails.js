@@ -110,7 +110,7 @@ class KycDetailsController extends Controller {
             if (!data.kycId) {
                 return this.res.send({ status: 0, message: "Please send kycId" });
             }
-            const kyc = await KycDetails.findOne({ _id: data.kycId, isDeleted: false }, { _v: 0 });
+            const kyc = await KycDetails.findOne({ userId: this.req.user, _id: data.kycId, isDeleted: false }, { _v: 0 });
             if (_.isEmpty(kyc)) {
                 return this.res.send({ status: 0, message: "Kyc details not found" });
             }

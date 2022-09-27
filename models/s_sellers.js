@@ -2,16 +2,12 @@ const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
 const address = new schema({
-    name: { type: String, trim: true },
     addressLine1: { type: String, trim: true },
     addressLine2: { type: String, trim: true },
     city: { type: String, trim: true },
-    zipCode: { type: Number, trim: true },
-    mobileNo: { type: String, trim: true },
-    emailId: { type: String, trim: true },
-    country: { type: String, trim: true },
-    GST: { type: String, trim: true },
-    defaultAddress: { type: Boolean, trim: true, default: false }
+    pincode: { type: Number, trim: true },
+    countryId: { type: schema.Types.ObjectId, ref: 'Country' },
+    state: { type: String, trim: true },
 });
 
 const SellerSchema = new schema({
@@ -33,7 +29,8 @@ const SellerSchema = new schema({
     isDeleted: { type: Boolean, default: false },
     status: { type: Boolean, default: true },
     role: { type: String , enum: ['seller'], default: "seller"},
-    shippingAddresses: [address],
+    mailingAddress: address,
+    otp: { type: String },
 }, {
     timestamps: true
 });

@@ -27,67 +27,70 @@ class BankDetailsController extends Controller {
         "bankName": "ICICI",
         "accountNumber": "95867948594938",
         "IFSCCode": "ICIC0005943",
-        "accountType":"savings",
+        "accountType":"current",
         "branchName":"Delhi",
         "bankStatement":"bankStatement.jpg",
         "IBANNumber": "AL902081100800000010395318016475839485",
         "swiftCode": "BKDNINBBDDR",
         "panCard": "UDHRO5761H",
-        "bankId": ""
+        "transactionPassword":"Test@1234",
+        "bankId":"63332abb8ac4ec74bf3cb876"
       }          
       Return: JSON String
   ********************************************************/
     async addUpdateBankDetails() {
         try {
             const currentSellerId = this.req.user;
-            const seller = await Sellers.findOne({ _id: currentSellerId }, { country: 1 })
-            if (_.isEmpty(seller)) {
-                return this.res.send({ status: 0, message: "Seller not found" });
-            }
             let data = this.req.body;
-            data.userId = currentSellerId;
-            const fieldsArray = seller.country == 'India' ?
-                ["fullName", "bankName",  "branchName", "accountNumber", "accountType", "IFSCCode", "panCard"] :
-                ["fullName", "bankName",  "branchName", "accountNumber", "accountType", "IBANNumber", "swiftCode"];
+            data.sellerId = currentSellerId;
+            if(!data.transactionPassword){
+                return this.res.send({ status: 0, message: "Please send transactionPassword"});
+            }
+            const seller = await Sellers.findOne({_id: currentSellerId, transactionPassword: data.transactionPassword},{countryId:1}).populate('countryId',{ name: 1, iso: 1, nickname: 1 })
+            if (_.isEmpty(seller)) {
+                return this.res.send({ status: 0, message: "Seller not found"});
+            }
+            const fields = seller.countryId.name == 'India'? ["IFSCCode","panCard"] : ["IBANNumber","swiftCode",]
+            const fieldsArray = ["fullName", "bankName",  "branchName", "accountNumber", "accountType", ...fields];
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
             }
             if (!['savings', 'current'].includes(data.accountType)) { return this.res.send({ status: 0, message: "Account Type should be either savings or current" }); }
-            if (data.IBANNumber) {
+            if(data.IBANNumber){
                 const validateIBAN = await this.commonService.IBANNumberValidation(data.IBANNumber);
-                if (!validateIBAN) {
+                if(!validateIBAN){
                     return this.res.send({ status: 0, message: "Please send proper IBAN number" });
                 }
             }
-            if (data.swiftCode) {
+            if(data.swiftCode){
                 const validateSwiftCode = await this.commonService.swiftCodeValidation(data.swiftCode);
-                if (!validateSwiftCode) {
-                    return this.res.send({ status: 0, message: "Please send proper swift code" });
-                }
+            if(!validateSwiftCode){
+                return this.res.send({ status: 0, message: "Please send proper swift code" });
             }
-            if (data.IFSCCode) {
+            }
+            if(data.IFSCCode){
                 const validateIFSCCode = await this.commonService.IFSCCodeValidation(data.IFSCCode);
-                if (!validateIFSCCode) {
+                if(!validateIFSCCode){
                     return this.res.send({ status: 0, message: "Please send proper IFSC Code" });
                 }
             }
-            if (data.pancard) {
+            if(data.pancard){
                 const validatePanCard = await this.commonService.panCardValidation(data.pancard);
-                if (!validatePanCard) {
+                if(!validatePanCard){
                     return this.res.send({ status: 0, message: "Please send proper pan card number" });
                 }
             }
-            if (data.id) {
-                await BankDetails.findByIdAndUpdate(data.id, data, { new: true, upsert: true });
+            if(data.bankId){
+                await BankDetails.findByIdAndUpdate(data.bankId, data, { new: true, upsert: true });
                 return this.res.send({ status: 1, message: "Bank details updated successfully" });
 
-            } else {
+            }else{
                 const newBank = await new Model(BankDetails).store(data);
                 if (_.isEmpty(newBank)) {
                     return this.res.send({ status: 0, message: "Bank details not saved" })
                 }
-                return this.res.send({ status: 1, message: "Bank details added successfully", data: { newBank } });
+                return this.res.send({ status: 1, message: "Bank details added successfully"});
             }
         }
         catch (error) {
@@ -111,7 +114,7 @@ class BankDetailsController extends Controller {
             if (!data.id) {
                 return this.res.send({ status: 0, message: "Please send bankId" });
             }
-            const bank = await BankDetails.findOne({ _id: data.id, isDeleted: false }, { _v: 0 });
+            const bank = await BankDetails.findOne({ _id: data.id, isDeleted: false }, { _v: 0 }).populate('sellerId',{fullName:1});
             if (_.isEmpty(bank)) {
                 return this.res.send({ status: 0, message: "Bank details not found" });
             }
@@ -128,17 +131,22 @@ class BankDetailsController extends Controller {
  Authorisation: true
  Parameter:
  {
-     "bankId":"5c9df24382ddca1298d855bb"
- }  
+        "bankId":"5c9df24382ddca1298d855bb",
+        "transactionPassword": ""
+    } 
  Return: JSON String
  ********************************************************/
     async deleteBankDetails() {
         try {
-            const data = this.req.params;
-            if (!data.id) {
-                return this.res.send({ status: 0, message: "Please send bankId" });
+            const data = this.req.body;
+            if (!data.bankId || !data.transactionPassword) {
+                return this.res.send({ status: 0, message: "Please send bankId and transactionPassword" });
             }
-            await BankDetails.findByIdAndUpdate({ _id: ObjectId(data.id) }, { isDeleted: true }, { new: true, upsert: true })
+            const seller = await Sellers.findOne({_id: this.req.user, transactionPassword: data.transactionPassword},{_id:1})
+            if (_.isEmpty(seller)) {
+                return this.res.send({ status: 0, message: "Seller not found"});
+            }
+            await BankDetails.findByIdAndUpdate({ _id: ObjectId(data.bankId) }, { isDeleted: true }, { new: true, upsert: true })
             return this.res.send({ status: 1, message: "Bank details deleted successfully" });
         } catch (error) {
             console.log("error- ", error);
@@ -157,7 +165,7 @@ class BankDetailsController extends Controller {
         try {
             const currentSellerId = this.req.user;
             if (currentSellerId) {
-                let bankDetails = await BankDetails.find({ userId: currentSellerId, isDeleted: false }, { __v: 0 });
+                let bankDetails = await BankDetails.find({ sellerId: currentSellerId, isDeleted: false }, { __v: 0 });
                 if (bankDetails.length == 0) {
                     return this.res.send({ status: 0, message: "No bank details available" });
                 }

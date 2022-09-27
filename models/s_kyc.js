@@ -3,6 +3,7 @@
  
  const kycSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'Users' },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
     selectId: { type: String, enum : ['Driving License','Aadhar Card', 'Passport', 'Voter ID', 'SSN'] },
     numberProof: { type: String},
     frontImage: { type: String },

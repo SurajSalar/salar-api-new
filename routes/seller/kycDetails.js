@@ -2,23 +2,23 @@ const KycDetailsController = require('../../controller/seller/kycDetails');
 const Authorization = require('../../middleware/auth');
 
 module.exports = (router, app) => {
-    router.post('/kyc', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.post('/seller/addAndUpdateKycDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const kycObj = (new KycDetailsController()).boot(req, res);
-        return kycObj.addUpdateKycDetails();
+        return kycObj.addAndUpdateKycDetails();
     });
 
-    router.get('/kyc/:id', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.get('/seller/getKycDetails/:kycId', Authorization.isSellerAuthorised, (req, res, next) => {
         const kycObj = (new KycDetailsController()).boot(req, res);
-        return kycObj.kycDetails();
+        return kycObj.getKycDetails();
     });
 
-    router.delete('/kyc/:id', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.post('/seller/deleteKycDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const kycObj = (new KycDetailsController()).boot(req, res);
         return kycObj.deleteKycDetails();
     });
 
-    router.get('/kycOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.get('/seller/getKycDetailsOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
         const kycObj = (new KycDetailsController()).boot(req, res);
-        return kycObj.kycDetailsOfSeller();
+        return kycObj.getKycDetailsOfSeller();
     });
 }
