@@ -2,9 +2,10 @@ const Schema = require('mongoose').Schema;
 const mongoose = require('mongoose');
 
 const iecSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: 'Sellers' },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'Sellers' },
     iecLicenseNo: { type: String},
-    iecLicenseDoc: { type: String }
+    iecLicenseDoc: { type: String },
+    isDeleted: { type: Boolean, default: false}
 },
     { timestamps: true });
 

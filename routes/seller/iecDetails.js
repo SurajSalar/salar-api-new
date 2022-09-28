@@ -2,23 +2,23 @@ const IecDetailsController = require('../../controller/seller/iecDetails');
 const Authorization = require('../../middleware/auth');
 
 module.exports = (router, app) => {
-    router.post('/iec', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.post('/seller/addAndUpdateIecDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const iecObj = (new IecDetailsController()).boot(req, res);
-        return iecObj.addUpdateIecDetails();
+        return iecObj.addAndUpdateIecDetails();
     });
 
-    router.get('/iec/:id', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.get('/seller/getIecDetails/:iecId', Authorization.isSellerAuthorised, (req, res, next) => {
         const iecObj = (new IecDetailsController()).boot(req, res);
-        return iecObj.iecDetails();
+        return iecObj.getIecDetails();
     });
 
-    router.delete('/iec/:id', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.post('/seller/deleteIecDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const iecObj = (new IecDetailsController()).boot(req, res);
         return iecObj.deleteIecDetails();
     });
 
-    router.get('/iecOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.get('/seller/getIecDetailsOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
         const iecObj = (new IecDetailsController()).boot(req, res);
-        return iecObj.iecDetailsOfSeller();
+        return iecObj.getIecDetailsOfSeller();
     });
 }

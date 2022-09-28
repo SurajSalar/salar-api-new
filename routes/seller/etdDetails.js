@@ -2,23 +2,23 @@ const EtdDetailsController = require('../../controller/seller/etdDetails');
 const Authorization = require('../../middleware/auth');
 
 module.exports = (router, app) => {
-    router.post('/etd', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.post('/seller/addAndUpdateEtdDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const etdObj = (new EtdDetailsController()).boot(req, res);
-        return etdObj.addUpdateEtdDetails();
+        return etdObj.addAndUpdateEtdDetails();
     });
 
-    router.get('/etd/:id', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.get('/seller/getEtdDetails/:etdId', Authorization.isSellerAuthorised, (req, res, next) => {
         const etdObj = (new EtdDetailsController()).boot(req, res);
-        return etdObj.etdDetails();
+        return etdObj.getEtdDetails();
     });
 
-    router.delete('/etd/:id', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.post('/seller/deleteEtdDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const etdObj = (new EtdDetailsController()).boot(req, res);
         return etdObj.deleteEtdDetails();
     });
 
-    router.get('/etdOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.get('/seller/getEtdDetailsOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
         const etdObj = (new EtdDetailsController()).boot(req, res);
-        return etdObj.etdDetailsOfSeller();
+        return etdObj.getEtdDetailsOfSeller();
     });
 }

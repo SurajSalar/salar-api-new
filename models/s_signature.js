@@ -5,7 +5,7 @@ const signatureSchema = new Schema({
     sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
     uploadSignature: { type: String},
     drawSignature: { type: String },
-    transactionPassword: { type: String }
+    isDeleted: { type: Boolean, default: false }
 },
     { timestamps: true });
 

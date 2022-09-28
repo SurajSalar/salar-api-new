@@ -2,23 +2,23 @@ const SignatureDetailsController = require('../../controller/seller/signatureDet
 const Authorization = require('../../middleware/auth');
 
 module.exports = (router, app) => {
-    router.post('/signature', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.post('/seller/addAndUpdateSignatureDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const signatureObj = (new SignatureDetailsController()).boot(req, res);
-        return signatureObj.addUpdateSignatureDetails();
+        return signatureObj.addAndUpdateSignatureDetails();
     });
 
-    router.get('/signature/:id', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.get('/seller/getSignatureDetails/:signatureId', Authorization.isSellerAuthorised, (req, res, next) => {
         const signatureObj = (new SignatureDetailsController()).boot(req, res);
-        return signatureObj.signatureDetails();
+        return signatureObj.getSignatureDetails();
     });
 
-    router.delete('/signature/:id', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.post('/seller/deleteSignatureDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const signatureObj = (new SignatureDetailsController()).boot(req, res);
         return signatureObj.deleteSignatureDetails();
     });
 
-    router.get('/signatureOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
+    router.get('/seller/getSignatureDetailsOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
         const signatureObj = (new SignatureDetailsController()).boot(req, res);
-        return signatureObj.signatureDetailsOfSeller();
+        return signatureObj.getSignatureDetailsOfSeller();
     });
 }

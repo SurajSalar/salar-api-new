@@ -2,7 +2,7 @@ const Schema = require('mongoose').Schema;
 const mongoose = require('mongoose');
 
 const fssaiSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: 'Sellers' },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'Sellers' },
     licenseNo: { type: String},
     qrCode: { type: String },
     licenseDoc: { type: String },
