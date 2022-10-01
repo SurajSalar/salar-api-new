@@ -11,6 +11,7 @@ module.exports = (router, app) => {
     require('../routes/admin/teamProducts')(router, app)
     require('../routes/admin/teamBonusSubscriptions')(router, app)
     require('../routes/admin/userManagement')(router, app)
+    require('../routes/admin/sellerManagement')(router, app)
     require('../routes/admin/ticketCategories')(router, app)
     // User Routes
     require('../routes/user/auth')(router, app)

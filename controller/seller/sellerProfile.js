@@ -226,7 +226,7 @@ class SellerProfileController extends Controller {
                     return this.res.send({ status: 0, message: "emailId already exists" });
                 }
             }
-            const updatedSeller = await Sellers.findOneAndUpdate({_id:currentSellerId, transactionPassword: data.transactionPassword}, data, { new: true });
+            const updatedSeller = await Sellers.findOneAndUpdate({_id:currentSellerId, transactionPassword: data.transactionPassword}, data, { new: true, upsert: true });
             if (_.isEmpty(updatedSeller)) {
                 return this.res.send({ status: 0, message: "Seller details are not updated" })
             }
