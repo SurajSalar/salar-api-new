@@ -127,7 +127,6 @@ const teamProductStages = [
     }]
 
 const downloadFilesStages = [
-    ...populateTables,
     {
         $project: {
             "Created Date": { $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} } ,
@@ -413,7 +412,8 @@ class TeamProductsController extends Controller {
                 ["Created Date", "Category", "SubCategory", "ChildCategory", "Seller", "Brand", "Price", "Product Id", "Product Name", "Commission", "Commission Amount", "Plan", "Level", "ULDownline", "Team Income Percentage", "Team Income Amount", "Team Income Amount Of User", "Left Amount", "ULDownlineShare", "ULDownlineAmount", "ULDownline Amount Of User", "Remaining Amount"]
 
             data['model'] = TeamProducts;
-            data['stages'] = downloadFilesStages;
+            data['stages'] = populateTables;
+            data['projectData'] = downloadFilesStages
             data['key'] = 'createdAt';
             data['query'] = { isDeleted: false, $and: query};
             data['fileName'] = 'team_products'

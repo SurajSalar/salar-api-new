@@ -175,6 +175,8 @@ const downloadFilesStages = [
    ...kycStages,
     { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
     { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
+]
+const downloadFilesStagesProjection = [
     {$project: {
         "Doj":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} }, 
         "User ID":"$registerId",
@@ -192,7 +194,6 @@ const downloadFilesStages = [
         "Country":"$country.name"
         }}
 ]
-
 const getUserStages = [
     ...kycStages,
     ...orgStages,
@@ -385,7 +386,10 @@ const downloadKycFilesStages = [
     ...orgStages,
      { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
-     {$project: {
+ ]
+
+const downloadKycFilesStagesProjection = [
+    {$project: {
         "Doj":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} }, 
         "User Type": "$role",
         "User ID":"$registerId",
@@ -411,8 +415,9 @@ const downloadKycFilesStages = [
         "Organisation Back Image":"$orgdetails.orgBackImage",
         "Organisation Status":"$orgdetails.status",
         "Organisation Remarks":"$orgdetails.remarks",
-         }}
- ]
+    }}
+]
+
 
 const loginHistoryStages = [
     { $lookup: {from: "users",localField: "userId",foreignField: "_id",as: "users"}},
@@ -423,15 +428,19 @@ const loginHistoryStages = [
         "users._id": "$users._id",
         "users.role": "$users.role",
         "users.status": "$users.status",
-        ipAddress:1,
-        device:1,
-        createdAt:1,
+        ipAddress: 1,
+        device: 1,
+        createdAt: 1,
+        updatedAt: 1
         }}
 ]
 
 const downloadFilesOfLoginHistory = [
     { $lookup: {from: "users",localField: "userId",foreignField: "_id",as: "users"}},
     { $unwind: {"path": "$users","preserveNullAndEmptyArrays": true} },
+]
+
+const downloadFilesOfLoginHistoryProjection = [
     {$project: {
         "Full Name":"$users.fullName",
         "Register ID": "$users.registerId",
@@ -439,11 +448,10 @@ const downloadFilesOfLoginHistory = [
         Status: "$users.status",
         "IP Address": "$ipAddress",
         Device: "$device",
-        Date:{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} },
-        }}
+        "Logged In Time":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} },
+        "Logged Out Time":{ $dateToString: { format: "%Y-%m-%d", date: "$updatedAt"} }
+    }}
 ]
-
-
 
 class UserManagementController extends Controller {
     constructor() {
@@ -466,7 +474,8 @@ class UserManagementController extends Controller {
             "status": true,
             "kycDetails.status": "Approved",
             "country.name":"India"
-        }
+        },
+        "searchText": "",
     }
     Return: JSON String
     ********************************************************/
@@ -480,6 +489,10 @@ class UserManagementController extends Controller {
             if(data.startDate || data.endDate){
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
+            }
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
             }
             const filterQuery = data.filter ? data.filter: {}
             const result = await Users.aggregate([
@@ -566,8 +579,14 @@ class UserManagementController extends Controller {
        Parameter:
        {
             "type":"csv" or "excel",
-            "startDate":"2022-09-16",
-            "endDate":"2022-09-16"
+            "startDate":"2022-09-20",
+            "endDate":"2022-09-25",
+            "filter": {
+                "status": true,
+                "kycDetails.status": "Approved",
+                "country.name":"India"
+            },
+            "searchText": "",
             "filteredFields": ["Doj", "User ID"] 
         }
        Return: JSON String
@@ -583,13 +602,19 @@ class UserManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
+            }
             data.filteredFields = data.filteredFields ? data.filteredFields :
                 [ "Doj","User ID" ,"User Name" ,"Image" ,"Sponser ID" ,"Age" ,"Gender" ,"Mobile Number" ,"Email ID" ,"User Type" ,"Account Status" ,"KYC status", "Remarks", "Country"]
 
             data['model'] = Users;
             data['stages'] = downloadFilesStages;
+            data['projectData'] = downloadFilesStagesProjection;
             data['key'] = 'createdAt';
             data['query'] = { isDeleted: false, $and: query};
+            data['filterQuery'] = data.filter ? data.filter: {}
             data['fileName'] = 'users'
 
             const download = await new DownloadsController().downloadFiles(data)
@@ -608,7 +633,8 @@ class UserManagementController extends Controller {
         "page":1,
         "pagesize":3,
         "startDate":"2022-09-24",
-        "endDate":"2022-09-25"
+        "endDate":"2022-09-25",
+        "searchText":""
     }
     Authorisation: true
     Return: JSON String
@@ -624,9 +650,15 @@ class UserManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
+            let searchQuery = [{}]
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                searchQuery.push({ $or: [{ "users.fullName": regex }, {"users.registerId": regex}] })
+            }
             const result = await AccessTokens.aggregate([
                 {$match: {$and: query, userId: { $exists: true } }},
                 ...loginHistoryStages,
+                {$match :{$and: searchQuery}},
                 {$sort: sort},
                 {$skip: skip},
                 {$limit: limit},
@@ -634,6 +666,7 @@ class UserManagementController extends Controller {
             const total = await AccessTokens.aggregate([
                 {$match: {$and: query, userId: { $exists: true } }},
                 ...loginHistoryStages,
+                {$match :{$and: searchQuery}},
             ])
             return this.res.send({status:1, message: "Listing details are: ", data: result,page: data.page, pagesize: data.pagesize, total: total.length});
         } catch (error) {
@@ -675,8 +708,9 @@ class UserManagementController extends Controller {
        {
             "type":"csv" or "excel",
             "startDate":"2022-09-16",
-            "endDate":"2022-09-16"
-            "filteredFields": ["Full Name", "Register ID", "Role","IP Address", "Device", "Date"]
+            "endDate":"2022-09-16",
+            "searchText":"",
+            "filteredFields": ["Full Name", "Register ID", "Role","IP Address", "Device",  "Logged In Time", "Logged Out Time"]
         }
        Return: JSON String
        ********************************************************/
@@ -691,13 +725,20 @@ class UserManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
+            let searchQuery = [{}]
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                searchQuery.push({ $or: [{ "users.fullName": regex }, {"users.registerId": regex}] })
+            }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                ["Full Name", "Register ID", "Role", "Status","IP Address", "Device", "Date"]
+                ["Full Name", "Register ID", "Role", "Status","IP Address", "Device",  "Logged In Time", "Logged Out Time"]
 
             data['model'] = AccessTokens;
             data['stages'] = downloadFilesOfLoginHistory;
+            data['projectData'] = downloadFilesOfLoginHistoryProjection;
             data['key'] = 'createdAt';
             data['query'] = {$and: query,  userId: { $exists: true } };
+            data['filterQuery'] = {$and: searchQuery}
             data['fileName'] = 'users_login_history'
 
             const download = await new DownloadsController().downloadFiles(data)
@@ -723,7 +764,8 @@ class UserManagementController extends Controller {
             "status": true,
             "kycDetails.status": "Approved",
             "country.name":"India"
-        }
+        },
+        "searchText":""
     }
     Return: JSON String
     ********************************************************/
@@ -737,6 +779,10 @@ class UserManagementController extends Controller {
             if(data.startDate || data.endDate){
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
+            }
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
             }
             const filterQuery = data.filter ? data.filter: {}
             const result = await Users.aggregate([
@@ -794,7 +840,13 @@ class UserManagementController extends Controller {
        {
             "type":"csv" or "excel",
             "startDate":"2022-09-16",
-            "endDate":"2022-09-16"
+            "endDate":"2022-09-16",
+            "filter": {
+                "status": true,
+                "kycDetails.status": "Approved",
+                "country.name":"India"
+            },
+            "searchText": "",
             "filteredFields": ["Doj", "User ID"] 
         }
        Return: JSON String
@@ -810,13 +862,19 @@ class UserManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
+            }
             data.filteredFields = data.filteredFields ? data.filteredFields :
                 [ "Doj","User Type", "User ID","User Name","KYC Doc No","KYC Front Image","KYC Back Image","KYC Status","KYC Remarks","Country","Bank Name","Account No","Account Type","IFSC Code","IBAN Number","Swift Code","Branch Name","Pan Card","Organisation Name","Organisation Certificate Number","Organisation Role","Organisation Front Image","Organisation Back Image","Organisation Status","Organisation Remarks"]
 
             data['model'] = Users;
             data['stages'] = downloadKycFilesStages;
+            data['projectData'] = downloadKycFilesStagesProjection;
             data['key'] = 'createdAt';
             data['query'] = { isDeleted: false, $and: query};
+            data['filterQuery'] =  data.filter ? data.filter: {};
             data['fileName'] = 'users-kyc'
 
             const download = await new DownloadsController().downloadFiles(data)

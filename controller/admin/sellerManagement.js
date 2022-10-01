@@ -204,6 +204,9 @@ const downloadFilesStages = [
    ...kycStages,
     { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
     { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
+]
+
+const downloadFilesStagesProjection = [
     {$project: {
         "Doj":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} }, 
         "Seller ID":"$registerId",
@@ -348,11 +351,10 @@ const kycSellersListingStages = [
      { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
      {$project: {
-         _id:1, createdAt:1, role:1,registerId:1, fullName:1, status:1, storeName: "storeName", storeId: "storeId",
-         kycDetails:1, country:1, bankDetails: 1, etdDetails: 1, fssaiDetails: 1, iecDetails:1
-         }}
+        _id:1, createdAt:1, role:1,registerId:1, fullName:1, status:1, storeName: "storeName", storeId: "storeId",
+        kycDetails:1, country:1, bankDetails: 1, etdDetails: 1, fssaiDetails: 1, iecDetails:1
+    }}
  ]
-
 const getKycDetailsStages = [
     ...kycStages,
     ...etdStages,
@@ -385,7 +387,10 @@ const downloadKycFilesStages = [
     ...bankStages,
      { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
-     {$project: {
+ ]
+
+const downloadKycFilesStagesProjection = [
+    {$project: {
         "Doj":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} }, 
         "Seller Type": "$role",
         "Seller ID":"$registerId",
@@ -417,7 +422,7 @@ const downloadKycFilesStages = [
         "Pan Image": "$etdDetails.panImage",
         "Pan No": "$etdDetails.panNo",
     }}
- ]
+]
 
 const loginHistoryStages = [
     { $lookup: {from: "sellers",localField: "sellerId",foreignField: "_id",as: "sellers"}},
@@ -431,12 +436,15 @@ const loginHistoryStages = [
         ipAddress:1,
         device:1,
         createdAt:1,
-        }}
+        updatedAt:1
+    }}
 ]
 
 const downloadFilesOfLoginHistory = [
     { $lookup: {from: "sellers",localField: "sellerId",foreignField: "_id",as: "sellers"}},
     { $unwind: {"path": "$sellers","preserveNullAndEmptyArrays": true} },
+]
+const downloadFilesOfLoginHistoryProjection = [
     {$project: {
         "Full Name":"$sellers.fullName",
         "Register ID": "$sellers.registerId",
@@ -444,12 +452,10 @@ const downloadFilesOfLoginHistory = [
         Status: "$sellers.status",
         "IP Address": "$ipAddress",
         Device: "$device",
-        Date:{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} },
+        "Logged In Time":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} },
+        "Logged Out Time":{ $dateToString: { format: "%Y-%m-%d", date: "$updatedAt"} }
         }}
 ]
-
-
-
 class SellerManagementController extends Controller {
     constructor() {
         super();
@@ -471,7 +477,8 @@ class SellerManagementController extends Controller {
             "status": true,
             "kycDetails.status": "Approved",
             "country.name":"India"
-        }
+        },
+        "searchText": ""
     }
     Return: JSON String
     ********************************************************/
@@ -486,7 +493,11 @@ class SellerManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
-            const filterQuery = data.filter ? data.filter: {}
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
+            }
+            const filterQuery = data.filter ? data.filter: {};
             const result = await Sellers.aggregate([
                 {$match: { isDeleted: false, $and: query}},
                 ...sellersListingStages,
@@ -571,8 +582,14 @@ class SellerManagementController extends Controller {
        Parameter:
        {
             "type":"csv" or "excel",
-            "startDate":"2022-09-16",
-            "endDate":"2022-09-16",
+            "startDate":"2022-09-20",
+            "endDate":"2022-09-25",
+            "filter": {
+                "status": true,
+                "kycDetails.status": "Approved",
+                "country.name":"India"
+            },
+            "searchText": "",
             "filteredFields": ["Doj", "Seller ID"] 
         }
        Return: JSON String
@@ -590,11 +607,16 @@ class SellerManagementController extends Controller {
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
                 [ "Doj", "Seller ID","Seller Name","Seller Image","Store Name","Store Id","Age","Gender","Mobile Number","Email ID","Account Status","KYC status","Remarks","Country"]
-
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
+            }
             data['model'] = Sellers;
             data['stages'] = downloadFilesStages;
+            data['projectData'] = downloadFilesStagesProjection;
             data['key'] = 'createdAt';
             data['query'] = { isDeleted: false, $and: query};
+            data['filterQuery'] = data.filter ? data.filter: {}
             data['fileName'] = 'sellers'
 
             const download = await new DownloadsController().downloadFiles(data)
@@ -629,9 +651,15 @@ class SellerManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
+            let searchQuery = [{}]
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                searchQuery.push({ $or: [{ "sellers.fullName": regex }, {"sellers.registerId": regex}] })
+            }
             const result = await AccessTokens.aggregate([
                 {$match: {$and: query, sellerId: { $exists: true } }},
                 ...loginHistoryStages,
+                {$match :{$and: searchQuery}},
                 {$sort: sort},
                 {$skip: skip},
                 {$limit: limit},
@@ -639,6 +667,7 @@ class SellerManagementController extends Controller {
             const total = await AccessTokens.aggregate([
                 {$match: {$and: query, sellerId: { $exists: true } }},
                 ...loginHistoryStages,
+                {$match :{$and: searchQuery}},
             ])
             return this.res.send({status:1, message: "Listing details are: ", data: result,page: data.page, pagesize: data.pagesize, total: total.length});
         } catch (error) {
@@ -678,10 +707,11 @@ class SellerManagementController extends Controller {
        Authorisation: true
        Parameter:
        {
-            "type":"csv" or "excel",
-            "startDate":"2022-09-16",
-            "endDate":"2022-09-16"
-            "filteredFields": ["Full Name", "Register ID", "Role","IP Address", "Device", "Date"]
+           "type":"csv" or "excel",
+            "startDate":"2022-09-20",
+            "endDate":"2022-09-25",
+            "searchText": "",
+            "filteredFields": ["Full Name", "Register ID", "Role","IP Address", "Device", "Logged In Time", "Logged Out Time"]
         }
        Return: JSON String
        ********************************************************/
@@ -696,15 +726,21 @@ class SellerManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
             }
+            let searchQuery = [{}]
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                searchQuery.push({ $or: [{ "sellers.fullName": regex }, {"sellers.registerId": regex}] })
+            }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                ["Full Name", "Register ID", "Role", "Status","IP Address", "Device", "Date"]
+                ["Full Name", "Register ID", "Role", "Status","IP Address", "Device", "Logged In Time", "Logged Out Time"]
 
             data['model'] = AccessTokens;
             data['stages'] = downloadFilesOfLoginHistory;
+            data['projectData'] = downloadFilesOfLoginHistoryProjection;
             data['key'] = 'createdAt';
             data['query'] = {$and: query,  sellerId: { $exists: true } };
+            data['filterQuery'] = {$and: searchQuery}
             data['fileName'] = 'sellers_login_history'
-
             const download = await new DownloadsController().downloadFiles(data)
             return this.res.send({ status:1, message: `${(data.type).toUpperCase()} downloaded successfully`, data: download });
             
@@ -728,7 +764,8 @@ class SellerManagementController extends Controller {
             "status": true,
             "kycDetails.status": "Approved",
             "country.name":"India"
-        }
+        },
+        "searchText":""
     }
     Return: JSON String
     ********************************************************/
@@ -742,6 +779,10 @@ class SellerManagementController extends Controller {
             if(data.startDate || data.endDate){
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
                 console.log(`query: ${JSON.stringify(query)}`)
+            }
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
             }
             const filterQuery = data.filter ? data.filter: {}
             const result = await Sellers.aggregate([
@@ -797,8 +838,14 @@ class SellerManagementController extends Controller {
        Parameter:
        {
             "type":"csv" or "excel",
-            "startDate":"2022-09-16",
-            "endDate":"2022-09-16"
+            "startDate":"2022-09-20",
+            "endDate":"2022-09-25",
+            "filter": {
+                "status": true,
+                "kycDetails.status": "Approved",
+                "country.name":"India"
+            },
+            "searchText": "",
             "filteredFields": ["Doj", "Seller ID"] 
         }
        Return: JSON String
@@ -812,15 +859,19 @@ class SellerManagementController extends Controller {
             let query = [{}];
             if(data.startDate || data.endDate){
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
-                console.log(`query: ${JSON.stringify(query)}`)
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
                 ["Doj", "Seller Type","Seller ID","Seller Name","Seller Image", "Store Name", "Store ID", "KYC Doc No","KYC Front Image","KYC Back Image","KYC Status","KYC Remarks","Country","Bank Name","Account No","Account Type","IFSC Code","IBAN Number","Swift Code","Branch Name","Pan Card","IEC Number","IEC Image","FSSAI No","FSSAI Doc Image","Tax Name","GST No","GST Image","Pan Image","Pan No",]
-
+            if(data.searchText){
+                let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
+                query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
+            }
             data['model'] = Sellers;
             data['stages'] = downloadKycFilesStages;
+            data['projectData'] = downloadKycFilesStagesProjection;
             data['key'] = 'createdAt';
             data['query'] = { isDeleted: false, $and: query};
+            data['filterQuery'] =  data.filter ? data.filter: {};
             data['fileName'] = 'sellers-kyc'
 
             const download = await new DownloadsController().downloadFiles(data)
