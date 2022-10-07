@@ -394,11 +394,13 @@ const downloadKycFilesStagesProjection = [
         "User Type": "$role",
         "User ID":"$registerId",
         "User Name": "$fullName",
+        "Account Status": "$status",
         "KYC Doc No":"$kycdetails.numberProof",
         "KYC Front Image":"$kycdetails.frontImage",
         "KYC Back Image":"$kycdetails.backImage",
         "KYC Status":"$kycdetails.status",
         "KYC Remarks":"$kycdetails.remarks",
+        "KYC Document Name": "$kycdetails.selectId",
         "Country":"$country.name",
         "Bank Name":"$bankdetails.bankName",
         "Account No":"$bankdetails.accountNumber",
@@ -442,14 +444,14 @@ const downloadFilesOfLoginHistory = [
 
 const downloadFilesOfLoginHistoryProjection = [
     {$project: {
-        "Full Name":"$users.fullName",
-        "Register ID": "$users.registerId",
+        "User Name":"$users.fullName",
+        "User ID": "$users.registerId",
         Role: "$users.role",
         Status: "$users.status",
         "IP Address": "$ipAddress",
         Device: "$device",
-        "Logged In Time":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} },
-        "Logged Out Time":{ $dateToString: { format: "%Y-%m-%d", date: "$updatedAt"} }
+        "Logged In Time":{ $dateToString: { format: "%Y-%m-%d %H:%M:%S", date: "$createdAt", timezone: "Asia/Kolkata"} },
+        "Logged Out Time":{ $dateToString: { format: "%Y-%m-%d %H:%M:%S", date: "$updatedAt", timezone: "Asia/Kolkata"} }
     }}
 ]
 
@@ -731,7 +733,7 @@ class UserManagementController extends Controller {
                 searchQuery.push({ $or: [{ "users.fullName": regex }, {"users.registerId": regex}] })
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                ["Full Name", "Register ID", "Role", "Status","IP Address", "Device",  "Logged In Time", "Logged Out Time"]
+                ["User Name", "User ID", "Role", "Status","IP Address", "Device",  "Logged In Time", "Logged Out Time"]
 
             data['model'] = AccessTokens;
             data['stages'] = downloadFilesOfLoginHistory;
@@ -867,7 +869,7 @@ class UserManagementController extends Controller {
                 query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                [ "Doj","User Type", "User ID","User Name","KYC Doc No","KYC Front Image","KYC Back Image","KYC Status","KYC Remarks","Country","Bank Name","Account No","Account Type","IFSC Code","IBAN Number","Swift Code","Branch Name","Pan Card","Organisation Name","Organisation Certificate Number","Organisation Role","Organisation Front Image","Organisation Back Image","Organisation Status","Organisation Remarks"]
+                [ "Doj","User Type", "User ID","User Name","Account Status", "KYC Doc No", "KYC Document Name", "KYC Front Image","KYC Back Image","KYC Status","KYC Remarks","Country","Bank Name","Account No","Account Type","IFSC Code","IBAN Number","Swift Code","Branch Name","Pan Card","Organisation Name","Organisation Certificate Number","Organisation Role","Organisation Front Image","Organisation Back Image","Organisation Status","Organisation Remarks"]
 
             data['model'] = Users;
             data['stages'] = downloadKycFilesStages;
