@@ -14,7 +14,7 @@ const storesListingStages = [
      { $lookup: {from: "countries",localField: "storeAddress.countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
      {$project: {
-         _id:1, createdAt:1, registerId:1, name:1,logo:1,banner:1,mobileNo:1,whatsappNo:1,emailId:1,storeAddress:1, status:1, approvalStatus:1, country:1
+         _id:1, createdAt:1, registerId:1, name:1,logo:1,banner:1, storeLink:1, mobileNo:1,whatsappNo:1,emailId:1,storeAddress:1, status:1, approvalStatus:1, country:1
          }}
  ]
 
@@ -37,6 +37,7 @@ class StoresController extends Controller {
             "mobileNo": "7207334583",
             "whatsappNo": "7207334583",
             "emailId": "lakshmimattafreelancer@gmail.com",
+            "storeLink":"",
             "storeAddress": {
                 "addressLine1":"addressLine1",
                 "addressLine2":"addressLine2",
@@ -53,7 +54,7 @@ class StoresController extends Controller {
                     const currentSellerId = this.req.user;
                     let data = this.req.body;
                     data.sellerId = currentSellerId;
-                    const fieldsArray = ["name","logo","banner","mobileNo","whatsappNo","emailId","storeAddress"];
+                    const fieldsArray = ["name","logo","banner","storeLink","mobileNo","whatsappNo","emailId","storeAddress"];
                     const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
                     if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                         return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });

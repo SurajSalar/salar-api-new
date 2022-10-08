@@ -18,6 +18,7 @@ const StoreSchema = new Schema({
     whatsappNo: { type: String },
     emailId: { type: String },
     registerId: { type: String },
+    storeLink: { type: String },
     storeAddress: address,
     sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
     isDeleted: { type: Boolean, default: false },
