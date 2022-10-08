@@ -64,15 +64,10 @@ class StoresController extends Controller {
                         return this.res.send({ status: 0, message: "Seller not found"});
                     }
                     if(data.storeId){
-                        // const getStore = await Stores.findOne({sellerId: currentSellerId,name: data.name,_id: {$ne: data.storeId}, isDeleted: false})
-                        // if (!_.isEmpty(getStore)) {
-                        //     return this.res.send({ status: 0, message: "Store name already exists" })
-                        // }
                         await Stores.findByIdAndUpdate(data.storeId, data, { new: true, upsert: true });
                         return this.res.send({ status: 1, message: "Store details updated successfully" });
                     }else{
                         const getStore = await Stores.findOne({sellerId: currentSellerId, isDeleted: false})
-                        // const getStore = await Stores.findOne({sellerId: currentSellerId,name: data.name, isDeleted: false})
                         if (!_.isEmpty(getStore)) {
                             return this.res.send({ status: 0, message: "Store details exists" })
                         }

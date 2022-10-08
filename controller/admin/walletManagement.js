@@ -123,8 +123,6 @@ class WalletManagementController extends Controller {
                 {$sort: {_id:-1}},
                 {$limit:20}
             ])
-            if (_.isEmpty(users) || users.length ==0 )
-                return this.res.send({ status: 0, message: "User not found" });
             return this.res.send({ status: 1, message: "Details are: ", data: users });
         } catch (error) {
             console.log("error- ", error);
@@ -156,8 +154,6 @@ class WalletManagementController extends Controller {
                 {$sort: {_id:-1}},
                 {$limit:20}
             ])
-            if (_.isEmpty(sellers) || sellers.length ==0 )
-                return this.res.send({ status: 0, message: "Seller not found" });
             return this.res.send({ status: 1, message: "Details are: ", data: sellers });
         } catch (error) {
             console.log("error- ", error);
@@ -193,8 +189,6 @@ class WalletManagementController extends Controller {
                 {$sort: {_id:-1}},
                 {$limit:20}
             ])
-            if (_.isEmpty(orders) || orders.length ==0 )
-                return this.res.send({ status: 0, message: "Order not found" });
             return this.res.send({ status: 1, message: "Details are: ", data: orders });
         } catch (error) {
             console.log("error- ", error);
