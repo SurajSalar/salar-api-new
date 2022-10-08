@@ -13,6 +13,7 @@ module.exports = (router, app) => {
     require('../routes/admin/userManagement')(router, app)
     require('../routes/admin/sellerManagement')(router, app)
     require('../routes/admin/ticketCategories')(router, app)
+    require('../routes/admin/walletManagement')(router, app)
     // User Routes
     require('../routes/user/auth')(router, app)
     require('../routes/user/userProfile')(router, app)

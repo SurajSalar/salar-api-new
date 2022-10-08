@@ -30,6 +30,7 @@ const SellerSchema = new schema({
     status: { type: Boolean, default: true },
     mailingAddress: address,
     otp: { type: String },
+    wallet: { type: Number, default: 0 },
 }, {
     timestamps: true
 });

@@ -30,6 +30,7 @@ const UserSchema = new schema({
     organisationName: { type: String },
     registerYear: { type: String },
     otp: { type: String },
+    wallet: { type: Number, default: 0 },
     termsAndConditions: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     status: { type: Boolean, default: true },
