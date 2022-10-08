@@ -16,6 +16,7 @@ module.exports = (router, app) => {
     require('../routes/admin/adPositions')(router, app)
     require('../routes/admin/advertisements')(router, app)
     require('../routes/admin/manageApprovals')(router, app)
+    require('../routes/admin/coupons')(router, app)
     // User Routes
     require('../routes/user/auth')(router, app)
     require('../routes/user/userProfile')(router, app)
