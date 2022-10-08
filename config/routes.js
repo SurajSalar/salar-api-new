@@ -32,4 +32,5 @@ module.exports = (router, app) => {
     require('../routes/seller/fssaiDetails')(router, app)
     require('../routes/seller/signatureDetails')(router, app)
     require('../routes/seller/iecDetails')(router, app)
+    require('../routes/seller/storeDetails')(router, app)
 };

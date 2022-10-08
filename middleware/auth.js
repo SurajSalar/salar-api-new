@@ -34,10 +34,7 @@ class Authorization {
         if (!token) return res.send({ status: 0, message: "Access denied. No token provided." })
         try {
             //if can verify the token, set req.user and pass to next middleware
-            const access_token = await AccessTokens.findOne({ token: token, role:"seller" });
-            if (access_token && access_token.role != 'seller') {
-                return res.send({ status: 0, message: "Access denied. Not a user" })
-            }
+            const access_token = await AccessTokens.findOne({ token: token, sellerId: {$exists: true}});
             if (access_token) {
                 req.user = access_token.sellerId;
                 req.token = token;

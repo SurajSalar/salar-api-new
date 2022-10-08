@@ -225,18 +225,54 @@ const bankStages = [
     }, 
 ]
 
+const storeStages = [
+    {
+        "$lookup" : {
+            "from" :"stores",
+            "let" : {
+                "sellerId" : "$_id"
+            },
+            "pipeline" : [
+                {
+                    "$match" : {
+                        "$expr" : {
+                            "$and" : [
+                                {
+                                    "$eq" : [
+                                        "$isDeleted",
+                                        false
+                                    ]
+                                },
+                                {
+                                    "$eq" : [
+                                        "$sellerId",
+                                        "$$sellerId"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            "as" : "storeDetails"
+        }
+    }, 
+    { $unwind: {"path": "$storeDetails","preserveNullAndEmptyArrays": true} },
+]
 const sellersListingStages = [
    ...kycStages,
+   ...storeStages,
     { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
     { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
     {$project: {
         _id:1, createdAt:1, registerId:1, fullName:1, image:1, sponserId:1, age:1, gender:1, mobileNo:1, emailId:1, status:1,
-        kycDetails:1, country:1
+        kycDetails:1, country:1, storeDetails:1
         }}
 ]
 
 const downloadFilesStages = [
    ...kycStages,
+   ...storeStages,
     { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
     { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
 ]
@@ -247,9 +283,9 @@ const downloadFilesStagesProjection = [
         "Seller ID":"$registerId",
         "Seller Name": "$fullName",
         "Seller Image": "$image",
-        "Store Name":"storeName",
-        "Store Id": "storeId",
-        "Store Logo": "storeLogo",
+        "Store Name":"$storeDetails.name",
+        "Store ID": "$storeDetails.registerId",
+        "Store Logo": "$storeDetails.logo",
         "Age": "$age",
         "Gender": "$gender",
         "Mobile Number": "$mobileNo",
@@ -266,6 +302,7 @@ const downloadFilesStagesProjection = [
 const getSellerStages = [
     ...kycStages,
     ...bankStages,
+    ...storeStages,
     {
         "$lookup" : {
             "from" : "countries",
@@ -294,6 +331,8 @@ const getSellerStages = [
             "preserveNullAndEmptyArrays" : true
         }
     }, 
+    { $lookup: {from: "countries",localField: "storeDetails.storeAddress.countryId",foreignField: "_id",as: "storeCountry"}},
+    { $unwind: {"path": "$storeCountry","preserveNullAndEmptyArrays": true}},
     {
         "$project" : {
             "_id" : 1,
@@ -321,6 +360,11 @@ const getSellerStages = [
             "mailingAddress.country._id" : "$mailingCountry._id",
             "kycDetails" : 1,
             "bankDetails" : 1,
+            "storeDetails": 1,
+            "storeCountry.name" : "$storeCountry.name",
+            "storeCountry.iso" : "$storeCountry.iso",
+            "storeCountry.nickname" : "$storeCountry.nickname",
+            "storeCountry._id" : "$storeCountry._id",
         }
     }, 
     {
@@ -372,6 +416,12 @@ const getSellerStages = [
             "bankDetails" : {
                 "$first" : "$bankDetails"
             },
+            "storeDetails" : {
+                "$first" : "$storeDetails"
+            },
+            "storeCountry" : {
+                "$first" : "$storeCountry"
+            },
         }
     }
 ]
@@ -382,19 +432,24 @@ const kycSellersListingStages = [
     ...fssaiStages,
     ...iecStages,
     ...bankStages,
+    ...storeStages,
      { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
      {$project: {
-        _id:1, createdAt:1, registerId:1, fullName:1, status:1, storeName: "storeName", storeId: "storeId",
+        _id:1, createdAt:1, registerId:1, fullName:1, status:1, storeDetails: 1,
         kycDetails:1, country:1, bankDetails: 1, etdDetails: 1, fssaiDetails: 1, iecDetails:1
     }}
  ]
+
 const getKycDetailsStages = [
     ...kycStages,
     ...etdStages,
     ...fssaiStages,
     ...iecStages,
     ...bankStages,
+    ...storeStages,
+    { $lookup: {from: "countries",localField: "storeDetails.storeAddress.countryId",foreignField: "_id",as: "storeCountry"}},
+    { $unwind: {"path": "$storeCountry","preserveNullAndEmptyArrays": true}},
     {
         "$project" : {
             "_id" : 1,
@@ -408,7 +463,9 @@ const getKycDetailsStages = [
             "bankDetails": 1,
             "etdDetails": 1,
             "fssaiDetails": 1,
-            "iecDetails": 1
+            "iecDetails": 1,
+            "storeDetails":1,
+            "storeCountry":1
         }
     }
 ]
@@ -420,6 +477,7 @@ const downloadKycFilesStages = [
     ...iecStages,
     ...bankStages,
     ...signatureStages,
+    ...storeStages,
      { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
  ]
@@ -430,9 +488,9 @@ const downloadKycFilesStagesProjection = [
         "Seller ID":"$registerId",
         "Seller Name": "$fullName",
         "Seller Image": "$image",
-        "Store Name": "storeName",
-        "Store ID": "storeId",
-        "Store Logo": "storeLogo",
+        "Store Name":"$storeDetails.name",
+        "Store ID": "$storeDetails.registerId",
+        "Store Logo": "$storeDetails.logo",
         "KYC Doc No":"$kycDetails.numberProof",
         "KYC Front Image":"$kycDetails.frontImage",
         "KYC Back Image":"$kycDetails.backImage",
@@ -463,11 +521,15 @@ const downloadKycFilesStagesProjection = [
 const loginHistoryStages = [
     { $lookup: {from: "sellers",localField: "sellerId",foreignField: "_id",as: "sellers"}},
     { $unwind: {"path": "$sellers","preserveNullAndEmptyArrays": true} },
+    { $lookup: {from: "stores",localField: "sellerId",foreignField: "sellerId",as: "stores"}},
+    { $unwind: {"path": "$stores","preserveNullAndEmptyArrays": true} },
     {$project: {
         "sellers.fullName": "$sellers.fullName",
         "sellers.registerId": "$sellers.registerId",
         "sellers._id": "$sellers._id",
         "sellers.status": "$sellers.status",
+        "stores.name": "$stores.name",
+        "stores.registerId": "$stores.registerId",
         ipAddress:1,
         device:1,
         createdAt:1,
@@ -478,11 +540,15 @@ const loginHistoryStages = [
 const downloadFilesOfLoginHistory = [
     { $lookup: {from: "sellers",localField: "sellerId",foreignField: "_id",as: "sellers"}},
     { $unwind: {"path": "$sellers","preserveNullAndEmptyArrays": true} },
+    { $lookup: {from: "stores",localField: "sellerId",foreignField: "sellerId",as: "stores"}},
+    { $unwind: {"path": "$stores","preserveNullAndEmptyArrays": true} },
 ]
 const downloadFilesOfLoginHistoryProjection = [
     {$project: {
         "Seller Name":"$sellers.fullName",
         "Seller ID": "$sellers.registerId",
+        "Store Name":"$stores.name",
+        "Store ID": "$stores.registerId",
         Status: "$sellers.status",
         "IP Address": "$ipAddress",
         Device: "$device",
@@ -640,7 +706,7 @@ class SellerManagementController extends Controller {
                 console.log(`query: ${JSON.stringify(query)}`)
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                [ "Doj", "Seller ID","Seller Name","Seller Image","Store Name","Store Id", "Store Logo", "Age","Gender","Mobile Number","Email ID","Account Status","KYC status","Remarks","Country", "State", "City"]
+                [ "Doj", "Seller ID","Seller Name","Seller Image","Store Name","Store ID", "Store Logo", "Age","Gender","Mobile Number","Email ID","Account Status","KYC status","Remarks","Country", "State", "City"]
             if(data.searchText){
                 let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
                 query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
@@ -766,7 +832,7 @@ class SellerManagementController extends Controller {
                 searchQuery.push({ $or: [{ "sellers.fullName": regex }, {"sellers.registerId": regex}] })
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                ["Seller Name", "Seller ID", "Status", "IP Address", "Device", "Logged In Time", "Logged Out Time"]
+                ["Seller Name", "Seller ID","Store Name", "Store ID", "Status", "IP Address", "Device", "Logged In Time", "Logged Out Time"]
 
             data['model'] = AccessTokens;
             data['stages'] = downloadFilesOfLoginHistory;
