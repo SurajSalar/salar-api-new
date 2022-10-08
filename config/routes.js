@@ -17,6 +17,7 @@ module.exports = (router, app) => {
     require('../routes/admin/advertisements')(router, app)
     require('../routes/admin/manageApprovals')(router, app)
     require('../routes/admin/coupons')(router, app)
+    require('../routes/admin/notifications')(router, app)
     // User Routes
     require('../routes/user/auth')(router, app)
     require('../routes/user/userProfile')(router, app)
@@ -29,6 +30,7 @@ module.exports = (router, app) => {
     require('../routes/common/fileUpload')(router, app)
     require('../routes/common/supportTickets')(router, app)
     require('../routes/common/categories')(router, app)
+    require('../routes/common/notifications')(router, app)
     // Seller Routes
     require('../routes/seller/auth')(router, app)
     require('../routes/seller/sellerProfile')(router, app)
