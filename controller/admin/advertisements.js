@@ -1,7 +1,7 @@
 const _ = require("lodash");
 
 const Controller = require("../base");
-const { Advertisements } = require('../../models/advertisements');
+const { Advertisements } = require('../../models/s_advertisements');
 const { AdPositions } = require('../../models/s_ad_positions');
 const { Stores } = require('../../models/s_store');
 const { Sellers } = require('../../models/s_sellers');

@@ -15,6 +15,7 @@ module.exports = (router, app) => {
     require('../routes/admin/walletManagement')(router, app)
     require('../routes/admin/adPositions')(router, app)
     require('../routes/admin/advertisements')(router, app)
+    require('../routes/admin/manageApprovals')(router, app)
     // User Routes
     require('../routes/user/auth')(router, app)
     require('../routes/user/userProfile')(router, app)
@@ -39,4 +40,6 @@ module.exports = (router, app) => {
     require('../routes/seller/storeDetails')(router, app)
     require('../routes/seller/adPositions')(router, app)
     require('../routes/seller/advertisements')(router, app)
+    require('../routes/seller/sellerBrands')(router, app)
+    require('../routes/seller/sellerCategories')(router, app)
 };
