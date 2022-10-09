@@ -87,7 +87,9 @@ const storesListingStages = [
     {$project: {
         _id:1,sellerId: "$seller.registerId", sellerName: "$seller.fullName", mobileNo: "$seller.mobileNo", emailId: "$seller.emailId",
         name:1, storeLink:1, kycStatus: "$kycDetails.status", kycId: "$kycDetails._id", legalDetailsStatus: "$etdDetails.status", 
-        legalDetailsId: "$etdDetails._id", status:1, approvalStatus:1
+        legalDetailsId: "$etdDetails._id", status:1, approvalStatus:1,
+        totalProducts: 1, // needs to modify
+        totalPublishedProducts: 1, // needs to modify
         }}
 ]
 const lookupStages = [

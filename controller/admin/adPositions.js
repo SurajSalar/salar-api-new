@@ -25,11 +25,11 @@ const adPositionsListingStages = [
 
  const downloadFilesStagesProjection = [
      {$project: {
-        "Created Date":{ $dateToString: { format: "%Y-%m-%d %H:%M:%S", date: "$createdAt", timezone: "Asia/Kolkata"} },
+        "Created Date":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "Asia/Kolkata"} },
         "Category": "$category.name",
         "Position Name": "$position",
         "No. Sliders": { $size: "$sliders" },
-        "Updated Date":{ $dateToString: { format: "%Y-%m-%d %H:%M:%S", date: "$updatedAt", timezone: "Asia/Kolkata"} },
+        "Updated Date":{ $dateToString: { format: "%Y-%m-%d", date: "$updatedAt", timezone: "Asia/Kolkata"} },
         "Status": "$status"
          }}
  ]
