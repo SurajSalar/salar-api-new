@@ -47,4 +47,5 @@ module.exports = (router, app) => {
     require('../routes/seller/advertisements')(router, app)
     require('../routes/seller/sellerBrands')(router, app)
     require('../routes/seller/sellerCategories')(router, app)
+    require('../routes/seller/subscriptions')(router, app)
 };
