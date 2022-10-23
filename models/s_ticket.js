@@ -5,7 +5,8 @@ const TicketSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'Users' },
     adminId: { type: Schema.Types.ObjectId, ref: 'Admin' },
     sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
-    description: { type: String },
+    subjectId: { type: Schema.Types.ObjectId, ref: 'ticketCategories' },
+    message: { type: String },
     role: { type: String, enum : ['user','admin', 'seller']},
     isDeleted: { type: Boolean, default: false }
 },{ timestamps: true });

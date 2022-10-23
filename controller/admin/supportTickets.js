@@ -31,7 +31,8 @@ class SupportTicketsController extends Controller {
             const sort = data.sort ? data.sort : { _id: -1 };
             const limit = data.pagesize
             const result = await Tickets.find({isDeleted:false}).populate('userId',{ fullName: 1 }).populate('adminId',{fullName:1}).sort(sort).skip(skip).limit(limit);
-            return this.res.send({status:1, message: "Listing details are: ", data: result});
+            const total = await Tickets.count({isDeleted: false});
+            return this.res.send({status:1, message: "Listing details are: ", data: result, page: data.page, pagesize: data.pagesize, total: total});
         } catch (error) {
             console.log("error- ", error);
             return this.res.send({ status: 0, message: "Internal server error" });

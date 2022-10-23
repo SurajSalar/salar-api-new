@@ -7,6 +7,11 @@ module.exports = (router, app) => {
         return userObj.changePassword();
     });
 
+    router.post('/changeTransactionPasswordRequest', Authorization.isAuthorised, (req, res, next) => {
+        const userObj = (new UserProfileController()).boot(req, res);
+        return userObj.changeTransactionPasswordRequest();
+    });
+
     router.post('/changeTransactionPassword', Authorization.isAuthorised, (req, res, next) => {
         const userObj = (new UserProfileController()).boot(req, res);
         return userObj.changeTransactionPassword();

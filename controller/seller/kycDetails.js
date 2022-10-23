@@ -1,19 +1,13 @@
 const _ = require("lodash");
-const { ObjectID, ObjectId } = require('mongodb');
+const { ObjectID } = require('mongodb');
 
 const Controller = require("../base");
 const { KycDetails } = require('../../models/s_kyc');
+const { Sellers } = require('../../models/s_sellers');
 const Model = require("../../utilities/model");
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
 
-const idProofs = {
-    AADHAR_CARD: 'Aadhar Card',
-    DRIVING_LICENCE: 'Driving License',
-    PASSPORT: 'Passport',
-    VOTER_ID: 'Voter ID',
-    SSN: 'SSN'
-}
 
 class KycDetailsController extends Controller {
     constructor() {
@@ -23,92 +17,100 @@ class KycDetailsController extends Controller {
     }
 
 
-    /********************************************************
-      Purpose: Add and update kyc details
-      Method: Post
-      Authorisation: true
-      Parameter:
-      {
-          "selectId": "Aadhar Card",
-          "numberProof": "12345678901",
-          "imageProof": "aadhar.png",
-          "kycId":""
-      }               
-      Return: JSON String
-  ********************************************************/
-    async addUpdateKycDetails() {
-        try {
-            const currentSellerId = this.req.user;
-            let data = this.req.body;
-            data.userId = currentSellerId;
-            const fieldsArray = ["selectId", "numberProof", "imageProof"];
-            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
-            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
-                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
-            }
-            if (data.selectId == idProofs.DRIVING_LICENCE) {
-                const validateDL = await this.commonService.drivingLicenseValidation(data.numberProof);
-                if (!validateDL) {
-                    return this.res.send({ status: 0, message: "Please send proper driving license number" });
-                }
-            }
-            if (data.selectId == idProofs.AADHAR_CARD) {
-                const validateAadharCard = await this.commonService.aadharCardValidation(data.numberProof);
-                if (!validateAadharCard) {
-                    return this.res.send({ status: 0, message: "Please send proper aadhar card number" });
-                }
-            }
-            if (data.selectId == idProofs.PASSPORT) {
-                const validatePassport = await this.commonService.passportValidation(data.numberProof);
-                if (!validatePassport) {
-                    return this.res.send({ status: 0, message: "Please send proper passport number" });
-                }
-            }
-            if (data.selectId == idProofs.VOTER_ID) {
-                const validateVoterId = await this.commonService.voterIdValidation(data.numberProof);
-                if (!validateVoterId) {
-                    return this.res.send({ status: 0, message: "Please send proper voter id number" });
-                }
-            }
-            if (data.selectId == idProofs.SSN) {
-                const validateSSN = await this.commonService.SSNValidation(data.numberProof);
-                if (!validateSSN) {
-                    return this.res.send({ status: 0, message: "Please send proper SSN number" });
-                }
-            }
-            if (data.kycId) {
-                await KycDetails.findByIdAndUpdate(data.kycId, data, { new: true, upsert: true });
-                return this.res.send({ status: 1, message: "Kyc details updated successfully" });
+      /********************************************************
+        Purpose: Add and update kyc details
+        Method: Post
+        Authorisation: true
+        Parameter:
+        {
+            "selectId": "Aadhar Card",
+            "numberProof": "12345678901",
+            "frontImage": "aadhar.png",
+            "backImage": "aadhar.png",
+            "kycId":"",
+            "transactionPassword":""
+        }               
+        Return: JSON String
+    ********************************************************/
+        async addAndUpdateKycDetails() {
+                try {
+                    const currentSellerId = this.req.user;
+                    let data = this.req.body;
+                    data.sellerId = currentSellerId;
+                    const fieldsArray = ["selectId", "numberProof","frontImage","backImage", "transactionPassword"];
+                    const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+                    if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                        return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+                    }
+                    const seller = await Sellers.findOne({_id: currentSellerId, transactionPassword: data.transactionPassword},{_id:1})
+                    if (_.isEmpty(seller)) {
+                        return this.res.send({ status: 0, message: "Seller not found"});
+                    }
+                    if(data.selectId == 'Driving License'){
+                        const validateDL = await this.commonService.drivingLicenseValidation(data.numberProof);
+                        if(!validateDL){
+                            return this.res.send({ status: 0, message: "Please send proper driving license number" });
+                        }
+                    }
+                    if(data.selectId == 'Aadhar Card'){
+                        const validateAadharCard = await this.commonService.aadharCardValidation(data.numberProof);
+                        if(!validateAadharCard){
+                            return this.res.send({ status: 0, message: "Please send proper aadhar card number" });
+                        }
+                    }
+                    if(data.selectId == 'Passport'){
+                        const validatePassport = await this.commonService.passportValidation(data.numberProof);
+                        if(!validatePassport){
+                            return this.res.send({ status: 0, message: "Please send proper passport number" });
+                        }
+                    }
+                    if(data.selectId == 'Voter ID'){
+                        const validateVoterId = await this.commonService.voterIdValidation(data.numberProof);
+                        if(!validateVoterId){
+                            return this.res.send({ status: 0, message: "Please send proper voter id number" });
+                        }
+                    }
+                    if(data.selectId == 'SSN'){
+                        const validateSSN = await this.commonService.SSNValidation(data.numberProof);
+                        if(!validateSSN){
+                            return this.res.send({ status: 0, message: "Please send proper SSN number" });
+                        }
+                    }
+                    if(data.kycId){
+                        await KycDetails.findByIdAndUpdate(data.kycId, data, { new: true, upsert: true });
+                        return this.res.send({ status: 1, message: "Kyc details updated successfully" });
 
-            } else {
-                const newKyc = await new Model(KycDetails).store(data);
-                if (_.isEmpty(newKyc)) {
-                    return this.res.send({ status: 0, message: "Kyc details not saved" })
+                    }else{
+                        const getKyc = await KycDetails.findOne({sellerId: currentSellerId, isDeleted: false})
+                        if (!_.isEmpty(getKyc)) {
+                            return this.res.send({ status: 0, message: "Kyc details exists" })
+                        }
+                        const newKyc = await new Model(KycDetails).store(data);
+                        if (_.isEmpty(newKyc)) {
+                            return this.res.send({ status: 0, message: "Kyc details not saved" })
+                        }
+                        return this.res.send({ status: 1, message: "Kyc details added successfully"});
+                    }
                 }
-                return this.res.send({ status: 1, message: "Kyc details added successfully", data: { newKyc } });
-            }
+                catch (error) {
+                    console.log("error- ", error);
+                    this.res.send({ status: 0, message: error });
+                }
         }
-        catch (error) {
-            console.log("error- ", error);
-            this.res.send({ status: 0, message: error });
-        }
-    }
 
-    /********************************************************
-   Purpose: Get Kyc Details
-   Method: Post
-   {
-       "kycId":""
-   }
-   Authorisation: true            
-   Return: JSON String
-   ********************************************************/
-    async kycDetails() {
+     /********************************************************
+    Purpose: Get Kyc Details
+    Method: GET
+    Authorisation: true            
+    Return: JSON String
+    ********************************************************/
+    async getKycDetails() {
         try {
-            if (!this.req.params.id) {
+            const data = this.req.params;
+            if (!data.kycId) {
                 return this.res.send({ status: 0, message: "Please send kycId" });
             }
-            const kyc = await KycDetails.findOne({ _id: ObjectId(this.req.params.id), isDeleted: false }, { _v: 0 });
+            const kyc = await KycDetails.findOne({ sellerId: this.req.user, _id: data.kycId, isDeleted: false }, { _v: 0 });
             if (_.isEmpty(kyc)) {
                 return this.res.send({ status: 0, message: "Kyc details not found" });
             }
@@ -119,22 +121,28 @@ class KycDetailsController extends Controller {
         }
     }
 
-    /********************************************************
-   Purpose: Delete Kyc details
-   Method: Post
-   Authorisation: true
-   Parameter:
-   {
-       "kycId":"5c9df24382ddca1298d855bb"
-   }  
-   Return: JSON String
-   ********************************************************/
+     /********************************************************
+    Purpose: Delete Kyc details
+    Method: Post
+    Authorisation: true
+    Parameter:
+    {
+        "kycId":"5c9df24382ddca1298d855bb",
+        "transactionPassword":""
+    }  
+    Return: JSON String
+    ********************************************************/
     async deleteKycDetails() {
         try {
-            if (!this.req.params.id) {
-                return this.res.send({ status: 0, message: "Please send kycId" });
+            const data = this.req.body;
+            if (!data.kycId || !data.transactionPassword) {
+                return this.res.send({ status: 0, message: "Please send kycId and transactionPassword" });
             }
-            await KycDetails.findByIdAndUpdate({ _id: ObjectId(this.req.params.id) }, { isDeleted: true }, { new: true, upsert: true })
+            const seller = await Sellers.findOne({_id: this.req.user, transactionPassword: data.transactionPassword},{_id:1})
+            if (_.isEmpty(seller)) {
+                return this.res.send({ status: 0, message: "Seller not found"});
+            }
+            await KycDetails.findByIdAndUpdate({ _id: ObjectID(data.kycId) },{isDeleted: true}, {new:true, upsert:true})
             return this.res.send({ status: 1, message: "Kyc details deleted successfully" });
         } catch (error) {
             console.log("error- ", error);
@@ -148,17 +156,17 @@ class KycDetailsController extends Controller {
     Authorisation: true
     Return: JSON String
     ********************************************************/
-    async kycDetailsOfSeller() {
+    async getKycDetailsOfSeller() {
         try {
             const currentSellerId = this.req.user;
             if (currentSellerId) {
-                let kycDetails = await KycDetails.find({ userId: currentSellerId, isDeleted: false }, { __v: 0 });
+                let kycDetails = await KycDetails.find({ sellerId: currentSellerId, isDeleted: false }, { __v: 0 });
                 if (kycDetails.length == 0) {
-                    return this.res.send({ status: 0, message: "No kyc details available" });
+                    return this.res.send({ status: 0, message: "No kyc details available"});
                 }
                 return this.res.send({ status: 1, message: "Details are: ", data: kycDetails });
             }
-            return this.res.send({ status: 0, message: "Seller not found" });
+            return this.res.send({ status: 0, message: "User not found"});
 
         } catch (error) {
             console.log("error- ", error);

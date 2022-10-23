@@ -6,6 +6,11 @@ module.exports = (router, app) => {
         return ticketObj.createSupportTicket();
     });
 
+    router.get('/getDetailsOfSupportTicket/:ticketId', (req, res, next) => {
+        const ticketObj = (new SupportTicketsController()).boot(req, res);
+        return ticketObj.getDetailsOfSupportTicket();
+    });
+
     router.post('/sendAndUpdateMessage', (req, res, next) => {
         const messageObj = (new SupportTicketsController()).boot(req, res);
         return messageObj.sendAndUpdateMessage();
@@ -24,6 +29,11 @@ module.exports = (router, app) => {
     router.post('/deleteMessage', (req, res, next) => {
         const messageObj = (new SupportTicketsController()).boot(req, res);
         return messageObj.deleteMessage();
+    });
+
+    router.post('/getTicketCategoriesList', (req, res, next) => {
+        const messageObj = (new SupportTicketsController()).boot(req, res);
+        return messageObj.getTicketCategoriesList();
     });
 
 }

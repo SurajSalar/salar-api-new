@@ -34,26 +34,31 @@ class BankDetailsController extends Controller {
             "nomineeRelation": "test",
             "nomineeMobileNo": "1234567890",
             "nomineeEmailId": "test@gmail.com",
-            "bankId":""
+            "bankId":"",
+            "transactionPassword":""
         }               
         Return: JSON String
     ********************************************************/
         async addAndUpdateBankDetails() {
             try {
                 const currentUserId = this.req.user;
-                const user = await Users.findOne({_id: currentUserId},{country:1})
+                let data = this.req.body;
+                data.userId = currentUserId;
+                if(!data.transactionPassword){
+                    return this.res.send({ status: 0, message: "Please send transactionPassword"});
+                }
+                const user = await Users.findOne({_id: currentUserId, transactionPassword: data.transactionPassword},{countryId:1}).populate('countryId',{ name: 1, iso: 1, nickname: 1 })
                 if (_.isEmpty(user)) {
                     return this.res.send({ status: 0, message: "User not found"});
                 }
-                let data = this.req.body;
-                data.userId = currentUserId;
-                const fieldsArray = user.country == 'India'?
-                    ["fullName","bankName","accountNumber","IFSCCode","panCard","nomineeName","nomineeRelation","nomineeMobileNo","nomineeEmailId"]: 
-                    ["fullName","bankName","accountNumber","IBANNumber","swiftCode","nomineeName","nomineeRelation","nomineeMobileNo","nomineeEmailId"];
+                const fields = user.countryId.name == 'India'? ["IFSCCode","panCard"] : ["IBANNumber","swiftCode",]
+                const fieldsArray = user.role == 'regular'? ["fullName","bankName","accountNumber","nomineeName","nomineeRelation","nomineeMobileNo","nomineeEmailId", ...fields]: 
+                    ["fullName","bankName","accountNumber", ...fields];
                 const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
                 if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                     return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
                 }
+               
                 if(data.IBANNumber){
                     const validateIBAN = await this.commonService.IBANNumberValidation(data.IBANNumber);
                     if(!validateIBAN){
@@ -128,15 +133,20 @@ class BankDetailsController extends Controller {
     Authorisation: true
     Parameter:
     {
-        "bankId":"5c9df24382ddca1298d855bb"
+        "bankId":"5c9df24382ddca1298d855bb",
+        "transactionPassword": ""
     }  
     Return: JSON String
     ********************************************************/
     async deleteBankDetails() {
         try {
             const data = this.req.body;
-            if (!data.bankId) {
-                return this.res.send({ status: 0, message: "Please send bankId" });
+            if (!data.bankId || !data.transactionPassword) {
+                return this.res.send({ status: 0, message: "Please send bankId and transactionPassword" });
+            }
+            const user = await Users.findOne({_id: this.req.user, transactionPassword: data.transactionPassword},{_id:1})
+            if (_.isEmpty(user)) {
+                return this.res.send({ status: 0, message: "User not found"});
             }
             await BankDetails.findByIdAndUpdate({ _id: ObjectID(data.bankId) },{isDeleted: true}, {new:true, upsert:true})
             return this.res.send({ status: 1, message: "Bank details deleted successfully" });

@@ -7,6 +7,8 @@ const Authentication = require('../auth');
 const CommonService = require("../../utilities/common");
 const Model = require("../../utilities/model");
 const Services = require('../../utilities/index');
+const { AccessTokens } = require("../../models/s_auth");
+const { Country } = require("../../models/s_country");
 
 
 
@@ -29,19 +31,19 @@ class UsersController extends Controller {
           "gender":"female",
           "age":"25",
           "emailId":"lakshmimattafreelancer@gmail.com",
-          "country":"India",
+          "countryId":"",
           "mobileNo":"7207334583",
           "password":"Text@123",
           "sponserId":"",
           "termsAndConditions": true,
-          "role": "individual"
+          "role": "regular"
       }
       OR
       {
         "organisationName":"Salar",
         "registeredYear":"2016",
         "emailId":"lakshmimattafreelancer@gmail.com",
-        "country":"India",
+        "countryId":"India",
         "mobileNo":"7207334583",
         "password":"Tt@123",
         "sponserId":"",
@@ -55,9 +57,9 @@ class UsersController extends Controller {
             if(!this.req.body.role){
                 return this.res.send({ status: 0, message: "Please send role of the user" });
             }
-            let fieldsArray = this.req.body.role == 'individual' ? 
-            ["fullName","dob","gender","age","emailId","country","mobileNo","password","termsAndConditions"]:
-            ["organisationName","registeredYear","emailId","country","mobileNo","password","termsAndConditions"];
+            let fieldsArray = this.req.body.role == 'regular' ? 
+            ["fullName","dob","gender","age","emailId","countryId","mobileNo","password","termsAndConditions"]:
+            ["organisationName","registeredYear","emailId","countryId","mobileNo","password","termsAndConditions"];
             let emptyFields = await this.requestBody.checkEmptyWithFields(this.req.body, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send"+ " " + emptyFields.toString() + " fields required." });
@@ -68,6 +70,12 @@ class UsersController extends Controller {
                     return this.res.send({ status: 0, message: "Please send proper fullName" });
                 }
             }
+
+            const validateCountry = await Country.findOne({_id: this.req.body.countryId, status: 1});
+            if (_.isEmpty(validateCountry)) {
+                return this.res.send({ status: 0, message: "Country details not found" })
+            }
+
             const validateEmail = await this.commonService.emailIdValidation(this.req.body.emailId);
             if(!validateEmail){
                 return this.res.send({ status: 0, message: "Please send proper emailId" });
@@ -81,7 +89,7 @@ class UsersController extends Controller {
                 return this.res.send({ status: 0, message: "Max word limit - 15 (with Mix of Capital,Small Letters , One Numerical and One Special Character" });
             }
             if(this.req.body.sponserId){
-                const userExists = await Users.findOne({sponserId: this.req.body.sponserId, isDeleted: false});
+                const userExists = await Users.findOne({registerId: this.req.body.sponserId, isDeleted: false});
                 if (_.isEmpty(userExists)) {
                     return this.res.send({ status: 0, message: "Invalid sponserId" });
                 } 
@@ -112,12 +120,12 @@ class UsersController extends Controller {
                     return this.res.send({ status: 0, message: "User not saved" })
                 }
                 else {
-                    const name = newUser.role == 'individual' ? newUser.fullName: newUser.organisationName
+                    const name = newUser.role == 'regular' ? newUser.fullName: newUser.organisationName
                     // Sending email
                     await this.services.sendEmail(newUser.emailId, "Salar", '',`<html><body><h2>HI! ${name} you have successfully registered with salar</h2><strong>RegisteredId</strong>: ${newUser.registerId} </br> <strong>Transaction password:</strong> ${transactionPassword}<h3></h3></body></html>`)
                     const message = `Dear ${name}, Welcome to www.salar.in Your User ID is ${newUser.registerId}, Your Password is ${transactionPassword}, Regards Strawberri World Solutions Private Limited.";`
                     // Sending message
-                    if(newUser.country == 'India' && newUser.mobileNo){
+                    if(validateCountry.name == 'India' && newUser.mobileNo){
                         await this.services.sendSignupConfirmation(newUser.mobileNo, message)
                     }
                     return this.res.send({ status: 1, message: "User registered Successfully"});
@@ -136,30 +144,51 @@ class UsersController extends Controller {
         {
             "userId":"emailId" or registerId
             "password":"123456"
+            "grantType":"password"
         }
+        or 
+        {
+            "refreshToken":"e857905a237905b28b014269d0628136eb600c7b60ff07f00557d1f6d443b0854627b1954d2a6ec75bc10f5f1e86960ef6f94090a7e0867348013d9b078a1dc2",
+            "grantType": "refreshToken"
+        }     
     Return: JSON String
    ********************************************************/
     async signIn() {
         try {
-            const fieldsArray = ["userId", "password"];
             const data = this.req.body;
-            const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
-            if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
-                return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
-            }
-            const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true });
-            if (_.isEmpty(user)) {
-                return this.res.send({ status: 0, message: "User not exists or deleted" });
-            }
-           
-            const status = await this.commonService.verifyPassword({ password: data.password, savedPassword: user.password });
-            if (!status) {
-                return this.res.send({ status: 0, message: "Invalid password" });
-            }
+            if (data.grantType == "password") {
+                const fieldsArray = ["userId", "password"];
+                const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+                if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
+                    return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
+                }
+                const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true });
+                if (_.isEmpty(user)) {
+                    return this.res.send({ status: 0, message: "User not exists or deleted" });
+                }
+            
+                const status = await this.commonService.verifyPassword({ password: data.password, savedPassword: user.password });
+                if (!status) {
+                    return this.res.send({ status: 0, message: "Invalid password" });
+                }
 
-            const userDetails = await Users.findById({_id:user._id}).select({password:0, __v:0, transactionPassword:0});
-            const { token } = await this.authentication.createToken({ id: user._id, role: userDetails.role, ipAddress: this.req.ip });
-            return this.res.send({ status: 1, message: "Login Successful", access_token: token, data: userDetails });
+                const userDetails = await Users.findById({_id:user._id}).select({password:0, __v:0, transactionPassword:0});
+                const { token, refreshToken } = await this.authentication.createToken({ id: user._id, role: userDetails.role, ipAddress: this.req.ip, device: this.req.device.type, action: "Login" });
+                return this.res.send({ status: 1, message: "Login Successful", access_token: token, refresh_token: refreshToken, data: userDetails });
+            }
+            else if (data.grantType == "refreshToken") {
+                const fieldsArray = ["refreshToken", "grantType"];
+                const emptyFieldsRefresh = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
+                if (emptyFieldsRefresh && Array.isArray(emptyFieldsRefresh) && emptyFieldsRefresh.length) {
+                    return this.res.send({ status: 0, message: "Please send" + " " + emptyFieldsRefresh.toString() + " fields required." });
+                }
+                const tokenStatus = await this.authentication.verifyRefreshToken(data);
+                const userDetails = await Users.findById({ _id: tokenStatus.id }).select({ password: 0, __v: 0 });
+                const { token, refreshToken } = await this.authentication.createToken({ id: userDetails._id, role: userDetails.role });
+                return this.res.send({ status: 1, message: "Login Successful", access_token: token, refresh_token: refreshToken, data: userDetails });
+            } else {
+                return this.res.send({ status: 0, message: "Please send grantType fields required." });
+            }
         } catch (error) {
             console.log(error);
             return this.res.send({ status: 0, message: "Internal server error" });
@@ -180,20 +209,20 @@ class UsersController extends Controller {
             if(!data.userId){
                 return this.res.send({ status: 0, message: "Please send userId" });
             }
-            const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true });
+            const user = await Users.findOne({$or:[{emailId: data.userId.toString().toLowerCase()},{registerId: data.userId}] , isDeleted: false, status:true }, {fullName:1,organisationName:1, countryId:1, role:1, mobileNo:1, emailId:1, registerId:1}).populate('countryId',{name:1});
             if (_.isEmpty(user)) {
                 return this.res.send({ status: 0, message: "User not exists or deleted" });
             }
-           
-            const token = await this.authentication.generateToken();
-            await Users.findByIdAndUpdate(user._id, { forgotToken: token, forgotTokenCreationTime: new Date() });
+            const newPassword = await this.commonService.randomGenerator(6);
+            const encryptedPassword = await this.commonService.ecryptPassword({ password: newPassword});
+            await Users.findByIdAndUpdate(user._id, { password: encryptedPassword }, {upsert: true});
 
-            const name = user.role == 'individual' ? user.fullName: user.organisationName
+            const name = user.role == 'regular' ? user.fullName: user.organisationName
             // Sending email
-            await this.services.sendEmail(user.emailId, "Salar", '',`<html><body><h2>HI! ${name} you have requested for a password change</h2><h3>Please click on the <a href="www.salar.in/forgotToken=${token}">link</a> to change your password</h3><strong>RegisteredId</strong>: ${user.registerId} </br> <strong>Transaction password:</strong> ${user.transactionPassword}<h3></h3></body></html>`)
-            const message = `Dear ${name}, Welcome to www.salar.in Your User ID is ${user.registerId}, Your Password is ${user.transactionPassword}, Regards Strawberri World Solutions Private Limited.";`
+            await this.services.sendEmail(user.emailId, "Salar", '',`<html><body><h2>HI! ${name} you have requested for a password change</h2><h3><strong>New password: </strong>${newPassword}</h3></body></html>`)
+            const message = `Dear ${name}, Welcome to www.salar.in Your User ID is ${user.registerId}, Your Password is ${newPassword}, Regards Strawberri World Solutions Private Limited.";`
             // Sending message
-            if(user.country == 'India' && user.mobileNo){
+            if(user.countryId.name == 'India' && user.mobileNo){
                 await this.services.sendSignupConfirmation(user.mobileNo, message)
             }
             return this.res.send({ status: 1, message: "Please check your registered email" });
@@ -204,32 +233,60 @@ class UsersController extends Controller {
         }
     }
 
+//       /********************************************************
+//     Purpose: Reset password
+//     Parameter:
+//         {
+//             "password":"123456",
+//             "token": "errrrwqqqsssfdfvfgfdewwwww"
+//         }
+//     Return: JSON String
+//    ********************************************************/
+//     async resetPassword() {
+//         try {
+//             const user = await Users.findOne({ forgotToken: this.req.body.token });
+//             if (_.isEmpty(user)) {
+//                 return this.res.send({ status: 0, message: "Invalid token"});
+//             }
+//             const validatePassword = await this.commonService.passwordValidation(this.req.body.password);
+//             if(!validatePassword){
+//                 return this.res.send({ status: 0, message: "Max word limit - 15 (with Mix of Capital,Small Letters , One Numerical and One Special Character" });
+//             }
+//             let password = await this.commonService.ecryptPassword({ password: this.req.body.password });
+
+//             const updateUser = await Users.findByIdAndUpdate(user._id, { password: password }, { new: true });
+//             if (_.isEmpty(updateUser)) {
+//                 return this.res.send({ status: 0, message: "Password not updated" });
+//             }
+//             return this.res.send({ status: 1, message: "Password updated successfully"});
+//         } catch (error) {
+//             console.log("error- ", error);
+//             return this.res.send({ status: 0, message: "Internal server error" });
+//         }
+//     }
+
       /********************************************************
-    Purpose: Reset password
-    Parameter:
-        {
-            "password":"123456",
-            "token": "errrrwqqqsssfdfvfgfdewwwww"
-        }
+    Purpose: Logout
+    Method: GET
     Return: JSON String
    ********************************************************/
-    async resetPassword() {
+    async logOut() {
         try {
-            const user = await Users.findOne({ forgotToken: this.req.body.token });
-            if (_.isEmpty(user)) {
+            const token = this.req.token;
+            console.log("token", token)
+            if (!token) {
+                return this.res.send({ status: 0, message: "Please send the token"});
+            }
+            const auth = await AccessTokens.findOne({ token: token, userId: this.req.user });
+            if (_.isEmpty(auth)) {
                 return this.res.send({ status: 0, message: "Invalid token"});
             }
-            const validatePassword = await this.commonService.passwordValidation(this.req.body.password);
-            if(!validatePassword){
-                return this.res.send({ status: 0, message: "Max word limit - 15 (with Mix of Capital,Small Letters , One Numerical and One Special Character" });
+           
+            const updateAuth = await AccessTokens.findByIdAndUpdate(auth._id, { token: "",refreshToken:"", action: 'Logout' }, { new: true });
+            if (_.isEmpty(updateAuth)) {
+                return this.res.send({ status: 0, message: "Failed to logout" });
             }
-            let password = await this.commonService.ecryptPassword({ password: this.req.body.password });
-
-            const updateUser = await Users.findByIdAndUpdate(user._id, { password: password }, { new: true });
-            if (_.isEmpty(updateUser)) {
-                return this.res.send({ status: 0, message: "Password not updated" });
-            }
-            return this.res.send({ status: 1, message: "Password updated successfully"});
+            return this.res.send({ status: 1, message: "Successfully logged out"});
         } catch (error) {
             console.log("error- ", error);
             return this.res.send({ status: 0, message: "Internal server error" });

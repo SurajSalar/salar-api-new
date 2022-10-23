@@ -1,4 +1,5 @@
 const UsersController = require('../../controller/user/authentication');
+const Authorization = require("../../middleware/auth");
 
 module.exports = (router, app) => {
     router.post('/signUp', (req, res, next) => {
@@ -16,8 +17,13 @@ module.exports = (router, app) => {
         return authObj.forgotPassword();
     });
 
-    router.post('/resetPassword', (req, res, next) => {
+    // router.post('/resetPassword', (req, res, next) => {
+    //     const authObj = (new UsersController()).boot(req, res);
+    //     return authObj.resetPassword();
+    // });
+
+    router.get('/logOut', Authorization.isAuthorised,(req, res, next) => {
         const authObj = (new UsersController()).boot(req, res);
-        return authObj.resetPassword();
+        return authObj.logOut();
     });
 }

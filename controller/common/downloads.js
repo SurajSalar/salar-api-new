@@ -28,6 +28,7 @@ downloadFiles(data) {
             let model = data.model;
             let file = data.fileName;
             let query = data.query ? data.query : {}
+            let filterQuery = data.filterQuery ? data.filterQuery : {}
             let projectData = data.projectData ? data.projectData : {}
             let type = data.type.toLowerCase();
             let stages = (data.stages) ? (data.stages) : []
@@ -37,6 +38,8 @@ downloadFiles(data) {
             const listing = await model.aggregate([
                 { $match: query },
                 ...stages, 
+                { $match: filterQuery },
+                ...projectData
                 ])
             /*********  Data getting from database ends **********/
             if (_.isEmpty(listing))

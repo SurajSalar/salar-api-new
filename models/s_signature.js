@@ -2,10 +2,10 @@ const Schema = require('mongoose').Schema;
 const mongoose = require('mongoose');
 
 const signatureSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: 'Sellers' },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
     uploadSignature: { type: String},
     drawSignature: { type: String },
-    transactionPassword: { type: String }
+    isDeleted: { type: Boolean, default: false }
 },
     { timestamps: true });
 

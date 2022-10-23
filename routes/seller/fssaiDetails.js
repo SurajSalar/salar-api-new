@@ -1,24 +1,24 @@
 const FssaiDetailsController = require('../../controller/seller/fssaiDetails');
-const isAuthorised = require('../../middleware/auth');
+const Authorization = require('../../middleware/auth');
 
 module.exports = (router, app) => {
-    router.post('/fssai', isAuthorised, (req, res, next) => {
+    router.post('/seller/addAndUpdateFssaiDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const fssaiObj = (new FssaiDetailsController()).boot(req, res);
-        return fssaiObj.addUpdateFssaiDetails();
+        return fssaiObj.addAndUpdateFssaiDetails();
     });
 
-    router.get('/fssai/:id', isAuthorised, (req, res, next) => {
+    router.get('/seller/getFssaiDetails/:fssaiId', Authorization.isSellerAuthorised, (req, res, next) => {
         const fssaiObj = (new FssaiDetailsController()).boot(req, res);
-        return fssaiObj.fssaiDetails();
+        return fssaiObj.getFssaiDetails();
     });
 
-    router.delete('/fssai/:id', isAuthorised, (req, res, next) => {
+    router.post('/seller/deleteFssaiDetails', Authorization.isSellerAuthorised, (req, res, next) => {
         const fssaiObj = (new FssaiDetailsController()).boot(req, res);
         return fssaiObj.deleteFssaiDetails();
     });
 
-    router.get('/fssaiOfSeller', isAuthorised, (req, res, next) => {
+    router.get('/seller/getFssaiDetailsOfSeller', Authorization.isSellerAuthorised, (req, res, next) => {
         const fssaiObj = (new FssaiDetailsController()).boot(req, res);
-        return fssaiObj.fssaiDetailsOfSeller();
+        return fssaiObj.getFssaiDetailsOfSeller();
     });
 }

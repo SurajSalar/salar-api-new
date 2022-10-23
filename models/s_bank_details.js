@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 
 const BankDetailsSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'Users' },
+    sellerId: { type: Schema.Types.ObjectId, ref: 'Seller' },
     fullName: { type: String},
     bankName: { type: String },
     accountNumber: { type: String },

@@ -240,7 +240,7 @@ class TeamBonusSubscriptionsController extends Controller {
             ["Date","Name","Type", "Price", "GSTPercentage", "GSTAmount", "Final Price", "Points", "Points Validity", "Code"]
 
             data['model'] = TeamBonusSubscriptions;
-            data['stages'] = downloadFilesStages;
+            data['projectData'] = downloadFilesStages;
             data['key'] = 'createdAt';
             data['query'] = { isDeleted: false, $and: query};
             data['fileName'] = 'team_bonus_subscription'

@@ -8,7 +8,7 @@ const { ChildCategory } = require("../../models/s_child_category")
 const { Brand } = require("../../models/s_brand")
 const { GameProduct } = require("../../models/s_game_product")
 const { Product } = require("../../models/s_product")
-const { Country } = require("../../models/s_county")
+const { Country } = require("../../models/s_country")
 
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
