@@ -202,7 +202,7 @@ class TeamBonusSubscriptionsController extends Controller {
             let status = 1;
             const updatedTeamBonusSubscriptions = await TeamBonusSubscriptions.updateMany({ _id: { $in: this.req.body.teamBonusSubscriptionIds }, isDeleted: false }, { $set: { isDeleted: true } });
             if (updatedTeamBonusSubscriptions) {
-                msg = updatedTeamBonusSubscriptions.modifiedCount ? updatedTeamBonusSubscriptions.modifiedCount + ' team level deleted.' : updatedTeamBonusSubscriptions.matchedCount== 0 ? "Details not found" : msg;
+                msg = updatedTeamBonusSubscriptions.modifiedCount ? updatedTeamBonusSubscriptions.modifiedCount + ' team bonus subscription deleted.' : updatedTeamBonusSubscriptions.matchedCount== 0 ? "Details not found" : msg;
                 status = updatedTeamBonusSubscriptions.matchedCount== 0? 0:1
             }
             return this.res.send({ status, message: msg });

@@ -13,6 +13,7 @@ const AdminSchema = new Schema({
     sponserId: { type: String },
     registerId: { type: String },
     registerYear: { type: String },
+    transactionPassword: { type: String },
     status: { type: Boolean, default: true },
     role: { type: String , enum: ['admin', 'staff']},
 }, {

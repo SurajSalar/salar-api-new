@@ -28,9 +28,9 @@ const SellerSchema = new schema({
     termsAndConditions: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
     status: { type: Boolean, default: true },
-    role: { type: String , enum: ['seller'], default: "seller"},
     mailingAddress: address,
     otp: { type: String },
+    wallet: { type: Number, default: 0 },
 }, {
     timestamps: true
 });

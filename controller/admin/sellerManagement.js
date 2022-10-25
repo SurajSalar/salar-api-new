@@ -45,6 +45,41 @@ const kycStages = [
     { $unwind: {"path": "$kycDetails","preserveNullAndEmptyArrays": true} },
 ]
 
+const signatureStages = [
+    {
+        "$lookup" : {
+            "from" :"signatures",
+            "let" : {
+                "sellerId" : "$_id"
+            },
+            "pipeline" : [
+                {
+                    "$match" : {
+                        "$expr" : {
+                            "$and" : [
+                                {
+                                    "$eq" : [
+                                        "$isDeleted",
+                                        false
+                                    ]
+                                },
+                                {
+                                    "$eq" : [
+                                        "$sellerId",
+                                        "$$sellerId"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            "as" : "signatureDetails"
+        }
+    }, 
+    { $unwind: {"path": "$signatureDetails","preserveNullAndEmptyArrays": true} },
+]
+
 const etdStages = [
     {
         "$lookup" : {
@@ -190,18 +225,54 @@ const bankStages = [
     }, 
 ]
 
+const storeStages = [
+    {
+        "$lookup" : {
+            "from" :"stores",
+            "let" : {
+                "sellerId" : "$_id"
+            },
+            "pipeline" : [
+                {
+                    "$match" : {
+                        "$expr" : {
+                            "$and" : [
+                                {
+                                    "$eq" : [
+                                        "$isDeleted",
+                                        false
+                                    ]
+                                },
+                                {
+                                    "$eq" : [
+                                        "$sellerId",
+                                        "$$sellerId"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            "as" : "storeDetails"
+        }
+    }, 
+    { $unwind: {"path": "$storeDetails","preserveNullAndEmptyArrays": true} },
+]
 const sellersListingStages = [
    ...kycStages,
+   ...storeStages,
     { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
     { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
     {$project: {
-        _id:1, createdAt:1, registerId:1, fullName:1, image:1, sponserId:1, age:1, gender:1, mobileNo:1, emailId:1, role:1, status:1,
-        kycDetails:1, country:1
+        _id:1, createdAt:1, registerId:1, fullName:1, image:1, sponserId:1, age:1, gender:1, mobileNo:1, emailId:1, status:1,
+        kycDetails:1, country:1, storeDetails:1
         }}
 ]
 
 const downloadFilesStages = [
    ...kycStages,
+   ...storeStages,
     { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
     { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
 ]
@@ -212,8 +283,9 @@ const downloadFilesStagesProjection = [
         "Seller ID":"$registerId",
         "Seller Name": "$fullName",
         "Seller Image": "$image",
-        "Store Name":"storeName",
-        "Store Id": "storeId",
+        "Store Name":"$storeDetails.name",
+        "Store ID": "$storeDetails.registerId",
+        "Store Logo": "$storeDetails.logo",
         "Age": "$age",
         "Gender": "$gender",
         "Mobile Number": "$mobileNo",
@@ -221,13 +293,16 @@ const downloadFilesStagesProjection = [
         "Account Status": "$status",
         "KYC status":"$kycDetails.status",
         "Remarks":"$kycDetails.remarks",
-        "Country":"$country.name"
+        "Country":"$country.name",
+        "State": "$mailingAddress.state",
+        "City": "$mailingAddress.city",
         }}
 ]
 
 const getSellerStages = [
     ...kycStages,
     ...bankStages,
+    ...storeStages,
     {
         "$lookup" : {
             "from" : "countries",
@@ -256,6 +331,8 @@ const getSellerStages = [
             "preserveNullAndEmptyArrays" : true
         }
     }, 
+    { $lookup: {from: "countries",localField: "storeDetails.storeAddress.countryId",foreignField: "_id",as: "storeCountry"}},
+    { $unwind: {"path": "$storeCountry","preserveNullAndEmptyArrays": true}},
     {
         "$project" : {
             "_id" : 1,
@@ -272,7 +349,6 @@ const getSellerStages = [
             "registerId" : 1,
             "termsAndConditions" : 1,
             "status" : 1,
-            "role" : 1,
             "mailingAddress.addressLine1" : "$mailingAddress.addressLine1",
             "mailingAddress.addressLine2" : "$mailingAddress.addressLine2",
             "mailingAddress.city" : "$mailingAddress.city",
@@ -284,6 +360,11 @@ const getSellerStages = [
             "mailingAddress.country._id" : "$mailingCountry._id",
             "kycDetails" : 1,
             "bankDetails" : 1,
+            "storeDetails": 1,
+            "storeCountry.name" : "$storeCountry.name",
+            "storeCountry.iso" : "$storeCountry.iso",
+            "storeCountry.nickname" : "$storeCountry.nickname",
+            "storeCountry._id" : "$storeCountry._id",
         }
     }, 
     {
@@ -319,9 +400,6 @@ const getSellerStages = [
             "status" : {
                 "$first" : "$status"
             },
-            "role" : {
-                "$first" : "$role"
-            },
             "mailingAddress" : {
                 "$push" : {
                     "addressLine1" : "$mailingAddress.addressLine1",
@@ -338,6 +416,12 @@ const getSellerStages = [
             "bankDetails" : {
                 "$first" : "$bankDetails"
             },
+            "storeDetails" : {
+                "$first" : "$storeDetails"
+            },
+            "storeCountry" : {
+                "$first" : "$storeCountry"
+            },
         }
     }
 ]
@@ -348,19 +432,24 @@ const kycSellersListingStages = [
     ...fssaiStages,
     ...iecStages,
     ...bankStages,
+    ...storeStages,
      { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
      {$project: {
-        _id:1, createdAt:1, role:1,registerId:1, fullName:1, status:1, storeName: "storeName", storeId: "storeId",
+        _id:1, createdAt:1, registerId:1, fullName:1, status:1, storeDetails: 1,
         kycDetails:1, country:1, bankDetails: 1, etdDetails: 1, fssaiDetails: 1, iecDetails:1
     }}
  ]
+
 const getKycDetailsStages = [
     ...kycStages,
     ...etdStages,
     ...fssaiStages,
     ...iecStages,
     ...bankStages,
+    ...storeStages,
+    { $lookup: {from: "countries",localField: "storeDetails.storeAddress.countryId",foreignField: "_id",as: "storeCountry"}},
+    { $unwind: {"path": "$storeCountry","preserveNullAndEmptyArrays": true}},
     {
         "$project" : {
             "_id" : 1,
@@ -374,7 +463,9 @@ const getKycDetailsStages = [
             "bankDetails": 1,
             "etdDetails": 1,
             "fssaiDetails": 1,
-            "iecDetails": 1
+            "iecDetails": 1,
+            "storeDetails":1,
+            "storeCountry":1
         }
     }
 ]
@@ -385,6 +476,8 @@ const downloadKycFilesStages = [
     ...fssaiStages,
     ...iecStages,
     ...bankStages,
+    ...signatureStages,
+    ...storeStages,
      { $lookup: {from: "countries",localField: "countryId",foreignField: "_id",as: "country"}},
      { $unwind: {"path": "$country","preserveNullAndEmptyArrays": true}},
  ]
@@ -392,12 +485,12 @@ const downloadKycFilesStages = [
 const downloadKycFilesStagesProjection = [
     {$project: {
         "Doj":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} }, 
-        "Seller Type": "$role",
         "Seller ID":"$registerId",
         "Seller Name": "$fullName",
         "Seller Image": "$image",
-        "Store Name": "storeName",
-        "Store ID": "storeId",
+        "Store Name":"$storeDetails.name",
+        "Store ID": "$storeDetails.registerId",
+        "Store Logo": "$storeDetails.logo",
         "KYC Doc No":"$kycDetails.numberProof",
         "KYC Front Image":"$kycDetails.frontImage",
         "KYC Back Image":"$kycDetails.backImage",
@@ -411,28 +504,32 @@ const downloadKycFilesStagesProjection = [
         "IBAN Number":"$bankDetails.IBANNumber",
         "Swift Code":"$bankDetails.swiftCode",
         "Branch Name":"$bankDetails.branchName",
-        "Pan Card":"$bankDetails.panCard",
+        "Bank Statement":"$bankDetails.bankStatement",
         "IEC Number": "$iecDetails.iecLicenseNo",
         "IEC Image": "$iecDetails.iecLicenseDoc",
         "FSSAI No": "$fssaiDetails.licenseNo",
         "FSSAI Doc Image": "$fssaiDetails.licenseDoc",
-        "Tax Name": "$etdDetails.name",
+        "Legal Name": "$etdDetails.name",
         "GST No": "$etdDetails.gstNo",
         "GST Image": "$etdDetails.gstImage",
         "Pan Image": "$etdDetails.panImage",
         "Pan No": "$etdDetails.panNo",
+        "Signature": "$signatureDetails.uploadSignature"
     }}
 ]
 
 const loginHistoryStages = [
     { $lookup: {from: "sellers",localField: "sellerId",foreignField: "_id",as: "sellers"}},
     { $unwind: {"path": "$sellers","preserveNullAndEmptyArrays": true} },
+    { $lookup: {from: "stores",localField: "sellerId",foreignField: "sellerId",as: "stores"}},
+    { $unwind: {"path": "$stores","preserveNullAndEmptyArrays": true} },
     {$project: {
         "sellers.fullName": "$sellers.fullName",
         "sellers.registerId": "$sellers.registerId",
         "sellers._id": "$sellers._id",
-        "sellers.role": "$sellers.role",
         "sellers.status": "$sellers.status",
+        "stores.name": "$stores.name",
+        "stores.registerId": "$stores.registerId",
         ipAddress:1,
         device:1,
         createdAt:1,
@@ -443,18 +540,21 @@ const loginHistoryStages = [
 const downloadFilesOfLoginHistory = [
     { $lookup: {from: "sellers",localField: "sellerId",foreignField: "_id",as: "sellers"}},
     { $unwind: {"path": "$sellers","preserveNullAndEmptyArrays": true} },
+    { $lookup: {from: "stores",localField: "sellerId",foreignField: "sellerId",as: "stores"}},
+    { $unwind: {"path": "$stores","preserveNullAndEmptyArrays": true} },
 ]
 const downloadFilesOfLoginHistoryProjection = [
     {$project: {
-        "Full Name":"$sellers.fullName",
-        "Register ID": "$sellers.registerId",
-        Role: "$sellers.role",
+        "Seller Name":"$sellers.fullName",
+        "Seller ID": "$sellers.registerId",
+        "Store Name":"$stores.name",
+        "Store ID": "$stores.registerId",
         Status: "$sellers.status",
         "IP Address": "$ipAddress",
         Device: "$device",
-        "Logged In Time":{ $dateToString: { format: "%Y-%m-%d", date: "$createdAt"} },
-        "Logged Out Time":{ $dateToString: { format: "%Y-%m-%d", date: "$updatedAt"} }
-        }}
+        "Logged In Time":{ $dateToString: { format: "%Y-%m-%d %H:%M:%S", date: "$createdAt", timezone: "Asia/Kolkata"} },
+        "Logged Out Time":{ $dateToString: { format: "%Y-%m-%d %H:%M:%S", date: "$updatedAt", timezone: "Asia/Kolkata"} }
+    }}
 ]
 class SellerManagementController extends Controller {
     constructor() {
@@ -606,7 +706,7 @@ class SellerManagementController extends Controller {
                 console.log(`query: ${JSON.stringify(query)}`)
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                [ "Doj", "Seller ID","Seller Name","Seller Image","Store Name","Store Id","Age","Gender","Mobile Number","Email ID","Account Status","KYC status","Remarks","Country"]
+                [ "Doj", "Seller ID","Seller Name","Seller Image","Store Name","Store ID", "Store Logo", "Age","Gender","Mobile Number","Email ID","Account Status","KYC status","Remarks","Country", "State", "City"]
             if(data.searchText){
                 let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
                 query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })
@@ -711,7 +811,7 @@ class SellerManagementController extends Controller {
             "startDate":"2022-09-20",
             "endDate":"2022-09-25",
             "searchText": "",
-            "filteredFields": ["Full Name", "Register ID", "Role","IP Address", "Device", "Logged In Time", "Logged Out Time"]
+            "filteredFields": ["Seller Name", "Seller ID", "Status", "IP Address", "Device", "Logged In Time", "Logged Out Time"]
         }
        Return: JSON String
        ********************************************************/
@@ -732,7 +832,7 @@ class SellerManagementController extends Controller {
                 searchQuery.push({ $or: [{ "sellers.fullName": regex }, {"sellers.registerId": regex}] })
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                ["Full Name", "Register ID", "Role", "Status","IP Address", "Device", "Logged In Time", "Logged Out Time"]
+                ["Seller Name", "Seller ID","Store Name", "Store ID", "Status", "IP Address", "Device", "Logged In Time", "Logged Out Time"]
 
             data['model'] = AccessTokens;
             data['stages'] = downloadFilesOfLoginHistory;
@@ -846,7 +946,7 @@ class SellerManagementController extends Controller {
                 "country.name":"India"
             },
             "searchText": "",
-            "filteredFields": ["Doj", "Seller ID"] 
+            "filteredFields": ["Doj", "Seller Type","Seller ID","Seller Name","Seller Image", "Store Name", "Store ID", "Store Logo", "KYC Doc No","KYC Front Image","KYC Back Image","KYC Status","KYC Remarks","Country","Bank Name","Account No","Account Type","IFSC Code","IBAN Number","Swift Code","Branch Name", "Bank Statement","IEC Number","IEC Image","FSSAI No","FSSAI Doc Image","Legal Name","GST No","GST Image","Pan Image","Pan No", "Signature"]
         }
        Return: JSON String
        ********************************************************/
@@ -861,7 +961,7 @@ class SellerManagementController extends Controller {
                 query = await new DownloadsController().dateFilter({key: 'createdAt', startDate: data.startDate, endDate: data.endDate})
             }
             data.filteredFields = data.filteredFields ? data.filteredFields :
-                ["Doj", "Seller Type","Seller ID","Seller Name","Seller Image", "Store Name", "Store ID", "KYC Doc No","KYC Front Image","KYC Back Image","KYC Status","KYC Remarks","Country","Bank Name","Account No","Account Type","IFSC Code","IBAN Number","Swift Code","Branch Name","Pan Card","IEC Number","IEC Image","FSSAI No","FSSAI Doc Image","Tax Name","GST No","GST Image","Pan Image","Pan No",]
+                ["Doj", "Seller ID","Seller Name","Seller Image", "Store Name", "Store ID", "Store Logo", "KYC Doc No","KYC Front Image","KYC Back Image","KYC Status","KYC Remarks","Country","Bank Name","Account No","Account Type","IFSC Code","IBAN Number","Swift Code","Branch Name", "Bank Statement","IEC Number","IEC Image","FSSAI No","FSSAI Doc Image","Legal Name","GST No","GST Image","Pan Image","Pan No", "Signature"]
             if(data.searchText){
                 let regex = { $regex: `.*${this.req.body.searchText}.*`, $options: 'i' };
                 query.push({ $or: [{ fullName: regex }, {registerId: regex}, {mobileNo: regex}, {emailId: regex}] })

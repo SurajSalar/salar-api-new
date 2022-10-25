@@ -8,7 +8,9 @@ const etdSchema = new Schema({
     gstImage: { type: String },
     panImage: { type: String },
     panNo: { type: String },
-    isDeleted: { type: Boolean, default: false }
+    isDeleted: { type: Boolean, default: false },
+    status: { type: String, enum: ['Approved', 'Rejected', 'Pending'], default:"Pending" },
+    remarks: { type: String }
 },
     { timestamps: true });
 

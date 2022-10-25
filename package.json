@@ -25,7 +25,7 @@
     "json2csv": "^5.0.7",
     "json2xls": "^0.1.2",
     "lodash": "^4.17.21",
-    "moment": "^2.29.3",
+    "moment": "^2.29.4",
     "mongoose": "^6.4.0",
     "multiparty": "^4.2.3",
     "mv": "^2.1.1",
