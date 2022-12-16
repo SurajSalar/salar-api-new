@@ -28,6 +28,8 @@ module.exports = (router, app) => {
     require('../routes/user/bankDetails')(router, app)
     require('../routes/user/orders')(router, app)
     require('../routes/user/website')(router, app)
+    require('../routes/user/payments')(router,app)
+    require('../routes/user/mlm')(router, app)
     // Common Routes
     require('../routes/common/fileUpload')(router, app)
     require('../routes/common/supportTickets')(router, app)

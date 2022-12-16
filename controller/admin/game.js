@@ -367,7 +367,7 @@ class MlmProductsController extends Controller {
         });
       }
       let data = this.req.body;
-      const fieldsArray = ["level", "level_members", "commission", "reward"];
+      const fieldsArray = ["level", "level_members", "commission", "reward","shopping_amount"];
       const emptyFields = await this.requestBody.checkEmptyWithFields(
         data,
         fieldsArray,
