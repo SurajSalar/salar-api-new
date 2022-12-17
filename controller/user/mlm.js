@@ -1,3 +1,5 @@
+/** @format */
+
 const _ = require("lodash");
 
 const Controller = require("../base");
@@ -8,6 +10,8 @@ const Services = require("../../utilities/index");
 const Model = require("../../utilities/model");
 const { Plan } = require("../../models/s_plan_game");
 const { Mlm } = require("../../models/s_mlm");
+const { Users } = require("../../models/s_users");
+
 class MlmAllController extends Controller {
   constructor() {
     super();
@@ -17,45 +21,58 @@ class MlmAllController extends Controller {
     this.authentication = new Authentication();
   }
 
+  /********************************************************
+        Purpose: Add root user
+        Method: Post
+        Authorisation: true
+        Parameter:
+        {
+	        "plan_id":"630289baf0c78a9b5f9b9030",
+	        "user_id":"62c39bdaa8b6ef3eebb6f082", 
+	        "name":"sivaji123",
+          "reffer_id":"63180efcb1c848381cd9a257"
+        }
+        Return: JSON String
+    ********************************************************/
   async AddUser() {
-    try{
+    try {
       const data = this.req.body;
       let plan_id = data.plan_id;
       let user_id = data.user_id;
       let name = data.name;
-      let ref = data.reffer_id
+      let ref = data.reffer_id;
       let sponser_id = data.sponser_id;
       const plan = await Plan.findOne({ _id: plan_id });
+      const u = await Users.findOne({ _id: user_id });
       let width = plan.width;
-    
+
       const mlm = await Mlm.findOne();
-  
-      const result = await this.getObject(mlm, user_id);
-   
+
+      const result = await this.getObject(mlm, ref ? ref : null);
+
       let addUser = result.children;
-  
+
       if (addUser.length >= width) {
         return this.res.send({ msg: "user can not be added" });
       } else {
         const user = {
           user_id: user_id,
-          amount: 14,
-          name: name,
+          amount: data.amount ? data.amount : null,
+          name: u.name ? u.name : name,
           reffer_id: ref,
           join_date: Date.now(),
-          sponser_id: sponser_id,
+          sponser_id: sponser_id ? sponser_id : null,
           children: [],
         };
         addUser.push(user);
       }
-  
-      const User = await new Model(Mlm).store(mlm);
-      return this.res.send(User);
-    } catch (e){
+
+      const resultData = await new Model(Mlm).store(mlm);
+      return this.res.send(resultData);
+    } catch (e) {
       console.log("error- ", e);
       return this.res.send({ status: 0, message: "Internal server error" });
     }
-    
   }
 
   /********************************************************
@@ -122,7 +139,7 @@ class MlmAllController extends Controller {
   getObject(object, string) {
     var result;
     if (!object || typeof object !== "object") return;
-    Object.values(object).some((v) => {
+    Object.values(object).some(v => {
       if (v === string) return (result = object);
       return (result = this.getObject(v, string));
     });
