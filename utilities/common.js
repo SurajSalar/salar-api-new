@@ -368,14 +368,5 @@ Return: JSON String
     return twoDimensionalArray;
   };
 
-  async getObject(object, string) {
-    var result;
-    if (!object || typeof object !== "object") return;
-    Object.values(object).some((v) => {
-      if (v === string) return (result = object);
-      return (result = getObject(v, string));
-    });
-    return result;
-  }
 }
 module.exports = Common;

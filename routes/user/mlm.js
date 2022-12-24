@@ -12,7 +12,7 @@ module.exports = (router, app) => {
         return paymentObj.AddRootUser();
     });
 
-    router.get('/getmlmuser', Authorization.isAuthorised, (req, res, next) => {
+    router.get('/getmlmuser/:id', Authorization.isAuthorised, (req, res, next) => {
         const paymentObj = (new MlmAllController()).boot(req, res);
         return paymentObj.getMlmUser();
     });

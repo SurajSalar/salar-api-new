@@ -45,13 +45,9 @@ class MlmAllController extends Controller {
       const plan = await Plan.findOne({ _id: plan_id });
       const u = await Users.findOne({ _id: user_id });
       let width = plan.width;
-
       const mlm = await Mlm.findOne();
-
       const result = await this.getObject(mlm, ref ? ref : null);
-
       let addUser = result.children;
-
       if (addUser.length >= width) {
         return this.res.send({ msg: "user can not be added" });
       } else {
@@ -126,16 +122,19 @@ class MlmAllController extends Controller {
 
   async getMlmUser() {
     try {
-      const data = this.req.body;
-      let user_id = data.user_id;
+      const data = this.req.params;
+      if (!data.id) {
+        return this.res.send({ status: 0, message: "please send user_id" });
+      }
       const mlm = await Mlm.findOne();
-      const result = await this.getObject(mlm, user_id);
+      const result = await this.getObject(mlm, data.id);
       return this.res.send({ status: 1, result: result });
     } catch (e) {
       console.log("error- ", e);
       return this.res.send({ status: 0, message: "Internal server error" });
     }
   }
+
   getObject(object, string) {
     var result;
     if (!object || typeof object !== "object") return;
@@ -144,6 +143,21 @@ class MlmAllController extends Controller {
       return (result = this.getObject(v, string));
     });
     return result;
+  }
+
+  mlmUserAmountMultiplytoTeam(arr, num) {
+    return arr.map(obj => {
+      Object.keys(obj).forEach(key => {
+        if (Array.isArray(obj[key])) {
+          this.mlmUserAmountMultiplytoTeam(obj[key], num);
+        }
+
+        if (key === "amount") {
+          obj[key] = obj[key] * 2;
+        }
+      });
+      return obj;
+    });
   }
 }
 
