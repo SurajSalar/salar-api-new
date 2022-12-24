@@ -108,6 +108,36 @@ class WebsiteController extends Controller {
             return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
+
+     async getEcommProductsUAID() {
+        try {
+            let query = { status: true }
+            if (this.req.query.category)
+                query['category'] = this.req.query.category
+            const products = await Product.find(query, { status: 0, _v: 0 })
+            .populate('category').limit(this.req.query.limit || 10).skip(this.req.query.offset || 0);
+            return this.res.send({ status: 1, data: products });
+
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+
+     async getEcommProductsDetailUAID() {
+        try {
+            let query = { status: true }
+            if (this.req.query.id)
+                query['_id']= this.req.query.id
+            const products = await Product.findOne(query, { status: 0, _v: 0 });
+            return this.res.send({ status: 1, data: products });
+
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
 }
 
 module.exports = WebsiteController;
