@@ -49,6 +49,20 @@ class OrderController extends Controller {
         }
     }
 
+    async statusCart() {
+        console.log(this.req.params.id);
+       // return false;
+        try {
+
+            const cart = await Cart.findByIdAndDelete({ _id: this.req.params.id });
+            return this.res.send({ status: 1, data: cart, message: "cart" });
+
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
     async placeOrder() {
         try {
 

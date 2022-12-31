@@ -5,7 +5,7 @@ const { AccessTokens } = require("../models/s_auth");
 class Authorization {
   static async isAuthorised(req, res, next) {
     let token = req.headers["x-access-token"] || req.headers["authorization"];
-    // token = token ? token.split(" ")[1] : false;
+    token = token ? token.split(" ")[1] : false;
     //if no token found, return response (without going to the next middelware)
     if (!token)
       return res.send({
