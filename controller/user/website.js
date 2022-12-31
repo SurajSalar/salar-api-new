@@ -6,6 +6,7 @@ const { GameCategory } = require('../../models/s_category_game')
 const { SubCategory } = require("../../models/s_sub_category")
 const { ChildCategory } = require("../../models/s_child_category")
 const { Brand } = require("../../models/s_brand")
+const { Deals } = require('../../models/s_deals');
 const { GameProduct } = require("../../models/s_game_product")
 const { Product } = require("../../models/s_product")
 const { Country } = require("../../models/s_country")
@@ -138,6 +139,22 @@ class WebsiteController extends Controller {
             return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
+
+
+     async getDealDetailsAll() {
+        try {
+            const Deal = await Deals.find({isDeleted: false }, { _v: 0 }).populate('products.productId');
+            if (_.isEmpty(Deal)) {
+                return this.res.send({ status: 0, message: "Deal details not found" });
+            }
+            return this.res.send({ status: 1, data: Deal });
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+
 }
 
 module.exports = WebsiteController;

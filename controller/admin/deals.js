@@ -148,6 +148,20 @@ class DealsController extends Controller {
         }
     }
 
+
+     async getDealDetailsAll() {
+        try {
+            const Deal = await Deals.find({isDeleted: false }, { _v: 0 }).populate('products.productId', { name: 1, unit_price:1, commission:1, gst_amount:1, gst_percent:1, final_price:1 });
+            if (_.isEmpty(Deal)) {
+                return this.res.send({ status: 0, message: "Deal details not found" });
+            }
+            return this.res.send({ status: 1, data: Deal });
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
         /********************************************************
      Purpose: single and multiple deals change status
      Parameter:

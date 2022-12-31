@@ -45,5 +45,11 @@ module.exports = (router, app) => {
         return websiteObj.getEcommProductsDetailUAID();
     });
     
+
+     router.get('/ua/getDealDetailsall', (req, res, next) => {
+        const dealObj = (new WebsiteController()).boot(req, res);
+        return dealObj.getDealDetailsAll();
+    });
+
     
 }

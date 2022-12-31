@@ -252,10 +252,10 @@ class UserProfileController extends Controller {
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
             }
-            const validateCountry = await Country.findOne({_id: this.req.body.countryId, status: 1});
-            if (_.isEmpty(validateCountry)) {
-                return this.res.send({ status: 0, message: "Country details not found" })
-            }
+            // const validateCountry = await Country.findOne({_id: this.req.body.countryId, status: 1});
+            // if (_.isEmpty(validateCountry)) {
+            //     return this.res.send({ status: 0, message: "Country details not found" })
+            // }
             const validateEmail = await this.commonService.emailIdValidation(data.emailId);
             if(!validateEmail){
                 return this.res.send({ status: 0, message: "Please send proper emailId" });
@@ -265,10 +265,10 @@ class UserProfileController extends Controller {
                 return this.res.send({ status: 0, message: "Mobile number should have 10 digits" });
             }
 
-            const validateGST = await this.commonService.GSTValidation(data.GST);
-            if(!validateGST){
-                return this.res.send({ status: 0, message: "Please send proper GST number" });
-            }
+            // const validateGST = await this.commonService.GSTValidation(data.GST);
+            // if(!validateGST){
+            //     return this.res.send({ status: 0, message: "Please send proper GST number" });
+            // }
 
             const validateZipCode = await this.commonService.zipCodeValidation(data.zipCode, data.country);
             if(!validateZipCode){
