@@ -60,14 +60,18 @@ const ProductSchema = Schema({
     type: String,
     default: null,
   },
-  variant_size: {
-    type: Number,
-    default: null,
-  },
-  variant_type: {
+  variant_color: [{
+    type: Schema.Types.ObjectId,
+    ref: "Unit",
+  }],
+  variant_size: [{
+   type: Schema.Types.ObjectId,
+    ref: "Unit",
+  }],
+  variant_type: [{
     type: String,
     default: null,
-  },
+  }],
   unit_price: {
     type: Number,
   },

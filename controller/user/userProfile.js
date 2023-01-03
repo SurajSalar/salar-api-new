@@ -35,13 +35,13 @@ class UserProfileController extends Controller {
         try {
             const user = this.req.user;
             const data = this.req.body; 
-            const fieldsArray = ["oldPassword", "newPassword", "transactionPassword"];
+            const fieldsArray = ["oldPassword", "newPassword"];
             const emptyFields = await this.requestBody.checkEmptyWithFields(data, fieldsArray);
             if (emptyFields && Array.isArray(emptyFields) && emptyFields.length) {
                 return this.res.send({ status: 0, message: "Please send" + " " + emptyFields.toString() + " fields required." });
             }
 
-            const userDetails = await Users.findOne({_id:user, transactionPassword:data.transactionPassword },{password:1})
+            const userDetails = await Users.findOne({_id:user},{password:1})
             if (_.isEmpty(userDetails)) {
                 return this.res.send({ status: 0, message: "User not found" });
             }
@@ -178,7 +178,6 @@ class UserProfileController extends Controller {
       "countryId":"",
       "mobileNo":"7207334583",
       "image":"",
-      "transactionPassword":""
     }               
     Return: JSON String
     ********************************************************/
@@ -187,9 +186,9 @@ class UserProfileController extends Controller {
             const currentUserId = this.req.user;
             const data = this.req.body;
             delete data.emailId;
-            if (!data.transactionPassword) {
-                return this.res.send({ status: 0, message: "Please send transaction password" });
-            }
+            // if (!data.transactionPassword) {
+            //     return this.res.send({ status: 0, message: "Please send transaction password" });
+            // }
             if(data.countryId){
                 const validateCountry = await Country.findOne({_id: this.req.body.countryId, status: 1});
                 if (_.isEmpty(validateCountry)) {
@@ -213,8 +212,9 @@ class UserProfileController extends Controller {
                     return this.res.send({ status: 0, message: "This mobile number exceeds the limit of registeration, please use other mobile for registration" });
                 }
             }
-            
-            const updatedUser = await Users.findOneAndUpdate({_id:currentUserId, transactionPassword: data.transactionPassword}, data, { new: true });
+            // not a required here , transactionPassword: data.transactionPassword
+
+            const updatedUser = await Users.findOneAndUpdate({_id:currentUserId}, data, { new: true });
             if (_.isEmpty(updatedUser)) {
                 return this.res.send({ status: 0, message: "User details are not updated" })
             }
