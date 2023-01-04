@@ -37,6 +37,9 @@ const ProductSchema = Schema({
   description: {
     type: String,
   },
+  long_description: {
+    type: String,
+  },
   min_purchase_qty: {
     type: Number,
   },

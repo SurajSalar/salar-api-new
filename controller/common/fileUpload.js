@@ -30,7 +30,6 @@ class FileUploadController extends Controller {
                         return this.res.send({ status: 0, message: "Please send a file" });
                     // let filePath;
                     let file = new File(formObject.files);
-                   
                     let fileObject = await file.store();
                     let filepath = fileObject.filePartialPath;
                     let data = { filepath }
