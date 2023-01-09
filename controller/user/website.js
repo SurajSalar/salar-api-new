@@ -84,11 +84,14 @@ class WebsiteController extends Controller {
             console.log("error- ", error);
             return this.res.send({ status: 0, message: "Internal server error" });
         }
-    }
+    } 
     async getGameProductsUA() {
         try {
-            const gameProduct = await GameProduct.find({ status: 1 }, { status: 0, _v: 0 }).limit(this.req.query.limit || 10).skip(this.req.query.offset || 0);
-            return this.res.send({ status: 1, data: gameProduct });
+             const offset = this.req.query.offset || 0;
+            const limit = this.req.query.limit || 10;
+            const gameProduct = await GameProduct.find({ status: 1 }, 
+                { status: 0, _v: 0 }).limit(limit).skip(offset);
+            return this.res.send({ status: 1, limit:limit, offset:offset, data: gameProduct });
 
         } catch (error) {
             console.log("error- ", error);

@@ -67,7 +67,10 @@ class MlmProductsController extends Controller {
   }
   async getMlmCategory() {
     try {
-      const categry = await GameCategory.find({ status: true });
+         const offset = this.req.query.offset || 0;
+            const limit = this.req.query.limit || 4;
+      const categry = await GameCategory.find({ status: true }).
+      limit(limit).skip(offset);
       if (_.isEmpty(categry)) {
         return this.res.send({
           status: 0,
@@ -77,6 +80,7 @@ class MlmProductsController extends Controller {
       }
       return this.res.send({
         status: 1,
+        limit:limit, offset:offset,
         data: categry,
         message: "Game Categories",
       });

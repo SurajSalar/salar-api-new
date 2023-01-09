@@ -38,7 +38,7 @@ router.post("/fileUpload", upload.single('files'), (req, res) => {
 });
 
 
-app.post('/uploadmultiple', upload.array('myFiles', 12), (req, res, next) => {
+router.post('/uploadmultiple', upload.array('myFiles', 12), (req, res, next) => {
   const files = req.files
   if (!files) {
     const error = new Error('Please choose files')
