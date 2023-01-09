@@ -350,11 +350,14 @@ class MlmProductsController extends Controller {
   }
   async getGameProducts() {
     try {
-      const gameProducts = await GameProduct.find({ status: true });
+           const offset = parseInt(this.req.query.offset || 0);
+            const limit = parseInt(this.req.query.limit || 5);
+      const gameProducts = await GameProduct.find({ status: true }).limit(limit)
+      .skip(offset);
       if (_.isEmpty(gameProducts)) {
         return this.res.send({ status: 0, message: "Games not found" });
       }
-      return this.res.send({ status: 1, data: gameProducts });
+      return this.res.send({ status: 1, limit:limit, offset:offset, data: gameProducts });
     } catch (error) {
       return this.res.send({ status: 0, message: "Internal server error" });
     }
