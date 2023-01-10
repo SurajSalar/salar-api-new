@@ -39,6 +39,7 @@ module.exports = (router, app) => {
   require("../routes/common/supportTickets")(router, app);
   require("../routes/common/categories")(router, app);
   require("../routes/common/notifications")(router, app);
+  require("../routes/common/blogs")(router, app);
   // Seller Routes
   require("../routes/seller/auth")(router, app);
   require("../routes/seller/sellerProfile")(router, app);

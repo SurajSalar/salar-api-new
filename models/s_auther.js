@@ -34,7 +34,9 @@ const AuthersSchema = Schema({
     countryId: {
         type: Schema.Types.ObjectId,
         ref: 'Country'
-    }
+    },
+     isDeleted: { type: Boolean, default: false},
+    status: { type: Boolean, default: true},
     created_at: {
         type: Date,
         default: Date.now

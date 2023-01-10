@@ -7,7 +7,9 @@ const BlogsSchema = Schema({
     category: {
         type: Schema.Types.ObjectId,
         ref: 'Category'
-    }
+    },
+       isDeleted: { type: Boolean, default: false},
+    status: { type: Boolean, default: true},
     created_at: {
         type: Date,
         default: Date.now

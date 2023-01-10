@@ -26,7 +26,9 @@ const BlogarticlesSchema = Schema({
     auther: {
         type: Schema.Types.ObjectId,
         ref: 'Authers'
-    }
+    },
+     isDeleted: { type: Boolean, default: false},
+    status: { type: Boolean, default: true},
     created_at: {
         type: Date,
         default: Date.now
