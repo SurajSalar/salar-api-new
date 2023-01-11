@@ -18,8 +18,16 @@ module.exports = (router, app) => {
         const orderObj = (new OrderController()).boot(req, res);
         return orderObj.getOrderSummary();
     });
+
+
     router.get('/orders', Authorization.isAuthorised, (req, res, next) => {
         const orderObj = (new OrderController()).boot(req, res);
         return orderObj.getAllOrder();
     });
+    router.delete('/cartdelete/:id', Authorization.isAuthorised, (req, res, next) => {
+        const orderObj = (new OrderController()).boot(req, res);
+        return orderObj.statusCart();
+    });
+
+    
 }

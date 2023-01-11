@@ -9,7 +9,6 @@ const { GameProduct } = require("../../models/s_game_product")
 const { OrderSummary } = require("../../models/s_order_summary")
 const { Order } = require("../../models/s_orders")
 const { Cart } = require("../../models/s_cart")
-
 const RequestBody = require("../../utilities/requestBody");
 const CommonService = require("../../utilities/common");
 const Services = require('../../utilities/index');
@@ -41,6 +40,20 @@ class OrderController extends Controller {
     async getCart() {
         try {
             const cart = await Cart.find({ user_id: this.req.user }).populate({ "path": "ecomm_prod_id" }).populate({ "path": "game_prod_id" })
+            return this.res.send({ status: 1, data: cart, message: "cart" });
+
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+    async statusCart() {
+        console.log(this.req.params.id);
+       // return false;
+        try {
+
+            const cart = await Cart.findByIdAndDelete({ _id: this.req.params.id });
             return this.res.send({ status: 1, data: cart, message: "cart" });
 
         } catch (error) {

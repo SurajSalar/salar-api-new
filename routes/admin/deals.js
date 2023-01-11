@@ -21,6 +21,12 @@ module.exports = (router, app) => {
         const dealObj = (new DealsController()).boot(req, res);
         return dealObj.getDealDetails();
     });
+    router.get('/admin/getDealDetailsall', Authorization.isAdminAuthorised, (req, res, next) => {
+        const dealObj = (new DealsController()).boot(req, res);
+        return dealObj.getDealDetailsAll();
+    });
+
+
 
     router.post('/admin/changeStatusOfDeals', Authorization.isAdminAuthorised, (req, res, next) => {
         const dealObj = (new DealsController()).boot(req, res);

@@ -6,6 +6,7 @@ const { GameCategory } = require('../../models/s_category_game')
 const { SubCategory } = require("../../models/s_sub_category")
 const { ChildCategory } = require("../../models/s_child_category")
 const { Brand } = require("../../models/s_brand")
+const { Deals } = require('../../models/s_deals');
 const { GameProduct } = require("../../models/s_game_product")
 const { Product } = require("../../models/s_product")
 const { Country } = require("../../models/s_country")
@@ -83,11 +84,14 @@ class WebsiteController extends Controller {
             console.log("error- ", error);
             return this.res.send({ status: 0, message: "Internal server error" });
         }
-    }
+    } 
     async getGameProductsUA() {
         try {
-            const gameProduct = await GameProduct.find({ status: 1 }, { status: 0, _v: 0 }).limit(this.req.query.limit || 10).skip(this.req.query.offset || 0);
-            return this.res.send({ status: 1, data: gameProduct });
+             const offset = this.req.query.offset || 0;
+            const limit = this.req.query.limit || 10;
+            const gameProduct = await GameProduct.find({ status: 1 }, 
+                { status: 0, _v: 0 }).limit(limit).skip(offset);
+            return this.res.send({ status: 1, limit:limit, offset:offset, data: gameProduct });
 
         } catch (error) {
             console.log("error- ", error);
@@ -108,6 +112,52 @@ class WebsiteController extends Controller {
             return this.res.send({ status: 0, message: "Internal server error" });
         }
     }
+
+     async getEcommProductsUAID() {
+        try {
+            let query = { status: true }
+            if (this.req.query.category)
+                query['category'] = this.req.query.category
+            const products = await Product.find(query, { status: 0, _v: 0 })
+            .populate('category').limit(this.req.query.limit || 10).skip(this.req.query.offset || 0);
+            return this.res.send({ status: 1, data: products });
+
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+
+     async getEcommProductsDetailUAID() {
+        try {
+            let query = { status: true }
+            if (this.req.query.id)
+                query['_id']= this.req.query.id
+            const products = await Product.findOne(query, { status: 0, _v: 0 });
+            return this.res.send({ status: 1, data: products });
+
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+
+     async getDealDetailsAll() {
+        try {
+            const Deal = await Deals.find({isDeleted: false }, { _v: 0 }).populate('products.productId');
+            if (_.isEmpty(Deal)) {
+                return this.res.send({ status: 0, message: "Deal details not found" });
+            }
+            return this.res.send({ status: 1, data: Deal });
+        } catch (error) {
+            console.log("error- ", error);
+            return this.res.send({ status: 0, message: "Internal server error" });
+        }
+    }
+
+
 }
 
 module.exports = WebsiteController;

@@ -17,6 +17,23 @@ const CartSchema = Schema({
         type: Number,
         default: 0
     },
+
+    unit_price: {
+        type: Number,
+        default: 0
+    },
+
+    prod_image: {
+        type: String
+    },
+
+     name: {
+        type: String
+    },
+     sku: {
+        type: String
+    },
+    
     created_at: {
         type: Date,
         default: Date.now

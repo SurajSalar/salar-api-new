@@ -36,4 +36,20 @@ module.exports = (router, app) => {
         const websiteObj = (new WebsiteController()).boot(req, res);
         return websiteObj.getEcommProductsUA();
     });
+    router.get('/ua/ecomm-products/:id', (req, res, next) => {
+        const websiteObj = (new WebsiteController()).boot(req, res);
+        return websiteObj.getEcommProductsUAID();
+    });
+    router.get('/ua/product-detail/:id', (req, res, next) => {
+        const websiteObj = (new WebsiteController()).boot(req, res);
+        return websiteObj.getEcommProductsDetailUAID();
+    });
+    
+
+     router.get('/ua/getDealDetailsall', (req, res, next) => {
+        const dealObj = (new WebsiteController()).boot(req, res);
+        return dealObj.getDealDetailsAll();
+    });
+
+    
 }
